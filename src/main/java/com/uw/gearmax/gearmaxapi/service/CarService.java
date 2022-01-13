@@ -14,5 +14,5 @@ public interface CarService {
 
     List<Car> listCars();
 
-    void removeCar(Long id) throws BusinessException;
+    Car removeCar(Long id) throws BusinessException;
 }

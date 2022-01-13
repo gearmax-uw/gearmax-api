@@ -26,6 +26,7 @@ public class CarServiceImpl implements CarService {
     /**
      * Validate the car properties by constraints. If no constraint is violated, then save car to repo.
      * For defined constraints,
+     *
      * @see com.uw.gearmax.gearmaxapi.domain.Car
      */
     @Override
@@ -38,7 +39,7 @@ public class CarServiceImpl implements CarService {
 
         Car returnedCar = carRepository.save(car);
 
-        return getCarById(returnedCar.getId()).get();
+        return returnedCar;
     }
 
     @Override
@@ -48,7 +49,7 @@ public class CarServiceImpl implements CarService {
 
     @Override
     @Transactional
-    public void removeCar(Long id) throws BusinessException {
+    public Car removeCar(Long id) throws BusinessException {
         Optional<Car> optionalCar = getCarById(id);
         // if remove a car does not exist, throw an exception
         if (!optionalCar.isPresent()) {
@@ -56,6 +57,7 @@ public class CarServiceImpl implements CarService {
                     "Car to be removed does not exist");
         }
         carRepository.deleteById(id);
+        return optionalCar.get();
     }
 
     @Override
