@@ -95,3 +95,10 @@ Try deleting a car record:
 
 - Or use Postman:
 ![Delete Car by Postman](img/postman_delete_car.png)
+  
+### For Developers
+
+If you would like to contribute to this project, make a new git branch and work on that branch. Make sure to commit the 
+code to the new branch and make a pull request to merge to the main branch.
+
+Before committing the code, always reformat the code. In Intellij IDEA, the formatting shortcut for Windows is **Ctrl+Alt+Shift+L**.
