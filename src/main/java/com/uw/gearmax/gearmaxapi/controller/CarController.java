@@ -44,6 +44,7 @@ public class CarController extends BaseController {
         car.setListedDate(LocalDate.now());
 
         Car returnedCar = carService.saveCar(car);
+        // wrap Car to CarVO
         CarVO carVO = convertVOFromEntity(returnedCar);
 
         return CommonReturnType.create(carVO);
@@ -64,6 +65,8 @@ public class CarController extends BaseController {
 
     private CarVO convertVOFromEntity(Car car) {
         CarVO carVO = new CarVO();
+        // copy properties of car to carVO
+        // make sure Car and CarVO have same attributes
         BeanUtils.copyProperties(car, carVO);
         return carVO;
     }

@@ -23,6 +23,11 @@ public class CarServiceImpl implements CarService {
     @Autowired
     private CarRepository carRepository;
 
+    /**
+     * Validate the car properties by constraints. If no constraint is violated, then save car to repo.
+     * For defined constraints,
+     * @see com.uw.gearmax.gearmaxapi.domain.Car
+     */
     @Override
     @Transactional
     public Car saveCar(Car car) throws BusinessException {
@@ -45,6 +50,7 @@ public class CarServiceImpl implements CarService {
     @Transactional
     public void removeCar(Long id) throws BusinessException {
         Optional<Car> optionalCar = getCarById(id);
+        // if remove a car does not exist, throw an exception
         if (!optionalCar.isPresent()) {
             throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
                     "Car to be removed does not exist");

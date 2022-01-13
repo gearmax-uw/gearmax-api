@@ -143,9 +143,6 @@ public class Car {
     @Column(name = "is_new", nullable = false)
     private Boolean isNew = false;
 
-    @Column(name = "address", columnDefinition = "text", nullable = false)
-    private String address = "";
-
     @Column(name = "zip", nullable = false)
     @NotEmpty(message = "Address ZIP cannot be empty")
     private String zip = "";
@@ -465,16 +462,8 @@ public class Car {
         return isNew;
     }
 
-    public void setNew(Boolean aNew) {
-        isNew = aNew;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+    public void setNew(Boolean isNew) {
+        isNew = isNew;
     }
 
     public String getZip() {
