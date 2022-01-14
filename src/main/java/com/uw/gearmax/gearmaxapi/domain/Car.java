@@ -33,7 +33,7 @@ public class Car {
     @Column(name = "year", columnDefinition = "year", nullable = false)
     @NotNull(message = "Year cannot be empty")
     @Min(value = 1884, message = "Year must be between 1884-2022")
-    @Max(value = 2002, message = "Year must be between 1884-2022")
+    @Max(value = 2022, message = "Year must be between 1884-2022")
     private Integer year;
 
     @Column(name = "mileage", nullable = false)
