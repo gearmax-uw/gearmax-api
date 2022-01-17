@@ -1,12 +1,15 @@
 package com.uw.gearmax.gearmaxapi.controller;
 
 import com.uw.gearmax.gearmaxapi.controller.viewobject.CarVO;
+import com.uw.gearmax.gearmaxapi.controller.viewobject.DepreciatedCarVO;
 import com.uw.gearmax.gearmaxapi.domain.Car;
+import com.uw.gearmax.gearmaxapi.domain.DepreciatedCar;
 import com.uw.gearmax.gearmaxapi.error.BusinessException;
 import com.uw.gearmax.gearmaxapi.query.CarSpecificationBuilder;
 import com.uw.gearmax.gearmaxapi.query.SearchOperation;
 import com.uw.gearmax.gearmaxapi.response.CommonReturnType;
 import com.uw.gearmax.gearmaxapi.service.CarService;
+import com.uw.gearmax.gearmaxapi.service.DepreciatedCarService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -28,6 +32,9 @@ public class CarController extends BaseController {
 
     @Autowired
     private CarService carService;
+
+    @Autowired
+    private DepreciatedCarService depreciatedCarService;
 
     @PostMapping("/add")
     @ResponseBody
@@ -54,8 +61,11 @@ public class CarController extends BaseController {
         car.setListedDate(LocalDate.now());
 
         Car returnedCar = carService.saveCar(car);
+
+        // TODO: when returnedCar is determined as DepreciatedCar/PickupTruck, you need to create DepreciatedCar/PickupTruck and save them in repo
+
         // wrap Car to CarVO
-        CarVO carVO = convertVOFromEntity(returnedCar);
+        CarVO carVO = convertCarVOFromEntity(returnedCar);
 
         return CommonReturnType.create(carVO);
     }
@@ -63,6 +73,7 @@ public class CarController extends BaseController {
     @DeleteMapping("/delete/{id}")
     @ResponseBody
     public CommonReturnType removeCar(@PathVariable(value = "id") Long id) throws BusinessException {
+        // TODO: first determine if the id corresponds a DepreciatedCar/PickupTruck. If it is, remove it from repo (CarRepo and DepreciatedCarRepo)
         carService.removeCar(id);
         return CommonReturnType.create(null);
     }
@@ -84,7 +95,7 @@ public class CarController extends BaseController {
      * ...
      * transmission: A (Automatic), M (Manual), CVT, Dual Clutch (only for note, may not provide to users)
      * <p>
-     * This method searches items by given parameters. Pagination and sorting is applied.
+     * This method searches items by given parameters. Pagination and sorting are applied.
      */
     @GetMapping("/list")
     @ResponseBody
@@ -92,7 +103,7 @@ public class CarController extends BaseController {
                                             @RequestParam(name = "bodyType", required = false) String bodyType,
                                             @RequestParam(name = "city", required = false) String city,
                                             @RequestParam(name = "makeName", required = false) String makeName,
-                                            @RequestParam(name = "makeName", required = false) String modelName,
+                                            @RequestParam(name = "modelName", required = false) String modelName,
                                             @RequestParam(name = "year", required = false) String yearRange,
                                             @RequestParam(name = "mileage", required = false, defaultValue = "-1") int mileage,
                                             @RequestParam(name = "maximumSeating", required = false, defaultValue = "-1") int maximumSeating,
@@ -119,7 +130,15 @@ public class CarController extends BaseController {
 
         List<Car> cars = page.getContent();
         List<CarVO> carVOs = cars.stream().map(car -> {
-            CarVO carVO = this.convertVOFromEntity(car);
+            // check if car is depreciated
+            if (car.getDepreciated()) {
+                // if it is, get the depreciated car from repo
+                DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
+                // copy both car's fields and depreciated car's fields to depreciated car's vo as DepreciatedCar extends Car
+                DepreciatedCarVO depreciatedCarVO = convertDepreciatedCarVOFromEntity(car, depreciatedCar);
+                return depreciatedCarVO;
+            }
+            CarVO carVO = this.convertCarVOFromEntity(car);
             return carVO;
         }).collect(Collectors.toList());
         return CommonReturnType.create(carVOs);
@@ -131,12 +150,30 @@ public class CarController extends BaseController {
         return "Hello world";
     }
 
-    private CarVO convertVOFromEntity(Car car) {
+    @GetMapping("/test/depreciatedCar/{id}")
+    @ResponseBody
+    public CommonReturnType testGetDepreciatedCar(@PathVariable Long id) {
+        Optional<DepreciatedCar> optionalCar = depreciatedCarService.getDepreciatedCarById(id);
+        if (optionalCar.isPresent()) {
+            DepreciatedCar depreciatedCar = optionalCar.get();
+            return CommonReturnType.create(depreciatedCar);
+        }
+        return CommonReturnType.create(null);
+    }
+
+    private CarVO convertCarVOFromEntity(Car car) {
         CarVO carVO = new CarVO();
         // copy properties of car to carVO
         // make sure Car and CarVO have same attributes
         BeanUtils.copyProperties(car, carVO);
         return carVO;
+    }
+
+    private DepreciatedCarVO convertDepreciatedCarVOFromEntity(Car car, DepreciatedCar depreciatedCar) {
+        DepreciatedCarVO depreciatedCarVO = new DepreciatedCarVO();
+        BeanUtils.copyProperties(car, depreciatedCarVO);
+        BeanUtils.copyProperties(depreciatedCar, depreciatedCarVO);
+        return depreciatedCarVO;
     }
 
     private Specification<Car> getCarSpec(String priceRange, String bodyType, String city, String makeName, String modelName,
