@@ -63,14 +63,32 @@ The *controller/viewobject* includes classes which represents view objects. Thos
 but they are wrapped to only have attributes expected to be displayed to users/developers. In controllers, we only return view 
 objects rather than entity objects.
 
-### How to run this app locally for development purpose?
+### How to run this app locally for development purpose by using your own MySQL server?
 
 1. Go to *gearmax-api* and run `mvn clean install`.
-2. Set up a database named *demo* with MySQL.
-3. Find the file *gearmax-api/src/main/resources/application.properties* and change the configuration:
+2. Comment out these lines in the file * gearmax-api/src/main/resources/application.properties*.
+```
+spring.datasource.url=jdbc:mysql://localhost/demo?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC&characterEncoding=utf-8
+spring.datasource.username=root
+spring.datasource.password=root
+```
+3. Set up a database named *demo* with MySQL.
+4. Find the file *gearmax-api/src/main/resources/application.properties* and change the configuration:
     - spring.datasource.username=[your MySQL username]
     - spring.datasource.password=[your MySQL password]
-4. Run *main()* function in *GearmaxApiApplication* class.
+5. Run *main()* function in *GearmaxApiApplication* class.
+
+### How to do the configuration if using the production MySQL server?
+
+If you would like to connect the backend app to the production MySQL server, you have to change the url, username, and password 
+as the last section states based on your production environment settings.
+
+To avoid leaking sensitive information, we use [Jasypt](https://github.com/ulisesbocchio/jasypt-spring-boot) to do the password encryption. 
+Jasypt allows you to only specify the encrypted password in the *application.properties* file. For example, if you would like to 
+encrypt a value *'InfoToBeEncrypted'* using the salt *'test'*, you can run command `mvn jasypt:decrypt-value -Djasypt.encryptor.password="test" -Djasypt.plugin.value="InfoToBeEncrypted"`.
+You will see the output encrypted value *ENC(/nJHoNctIHpmuaGcmqqUIt5EPw/3/CWzz7RVZrOdhof3NnyvMezwO84n+WdESXLu)*, so you can 
+replace the old original password with the encrypted value. Also, do not forget to specify your salt in the property file as well: `jasypt.encryptor.password=test`.
+
 
 ### How to send requests after the app starts?
 
