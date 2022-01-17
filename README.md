@@ -76,24 +76,25 @@ objects rather than entity objects.
 
 You can directly send http requests or use Postman. Either way is fine.
 
+Try searching a car by given parameters:
+
+`http://localhost:8080/car/list?bodyType=SUV_Crossover&year=2010-2019`
+
+`http://localhost:8080/car/list?bodyType=SUV_Crossover&year=2010-2019&mileage=50000`
+
+
+**Only add/delete record to your local MySQL databases. Don't perform these operations to the production server.**
+
 Try adding a car record:
 
-- Directly send http request: 
-
-      http://localhost:8080/car/add?vin=12345&sellerId=0&price=10000&year=2000&mileage=8&bodyType=SUV&zip=000111&city=Houston&country=USA`
-
-- Or use Postman:
+- use Postman:
   ![Add Car by Postman](/img/postman_add_car.png)
   
 Then you will see the new record in database.
       
 Try deleting a car record:
 
-- Directly send http request:
-        
-        http://localhost:8080/car/delete/1
-
-- Or use Postman:
+- use Postman:
 ![Delete Car by Postman](img/postman_delete_car.png)
   
 ### For Developers

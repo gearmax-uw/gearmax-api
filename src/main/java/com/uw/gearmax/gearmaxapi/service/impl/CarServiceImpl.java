@@ -8,10 +8,12 @@ import com.uw.gearmax.gearmaxapi.service.CarService;
 import com.uw.gearmax.gearmaxapi.validator.ValidationResult;
 import com.uw.gearmax.gearmaxapi.validator.ValidatorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,11 +45,6 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    public List<Car> listCars() {
-        return carRepository.findAll();
-    }
-
-    @Override
     @Transactional
     public Car removeCar(Long id) throws BusinessException {
         Optional<Car> optionalCar = getCarById(id);
@@ -58,6 +55,16 @@ public class CarServiceImpl implements CarService {
         }
         carRepository.deleteById(id);
         return optionalCar.get();
+    }
+
+    @Override
+    public Page<Car> listCarsByBodyType(String bodyType, Pageable pageable) {
+        return carRepository.findAllByBodyType(bodyType, pageable);
+    }
+
+    @Override
+    public Page<Car> listCarsWithSpecification(Specification spec, Pageable pageable) {
+        return carRepository.findAll(spec, pageable);
     }
 
     @Override

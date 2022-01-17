@@ -1,4 +1,4 @@
-package com.uw.gearmax.gearmaxapi.controller;
+package com.uw.gearmax.gearmaxapi.service;
 
 import com.uw.gearmax.gearmaxapi.domain.Car;
 import com.uw.gearmax.gearmaxapi.repository.CarRepository;
