@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -67,35 +68,51 @@ public class CarController extends BaseController {
     }
 
     /**
-     * Requested parameters:
-     * - bodyType
+     * Parameters that can be used to search:
+     * - price (range, e.g., 1000-2000)
+     * - body_type
      * - city
      * - make_name
+     * - model_name
      * - year (range, e.g., 2010-2022)
      * - mileage (less than)
      * - options (not implemented yet)
      * - exterior_color (has problem now)
      * - interior_color (has problem now)
      * - maximum_seating
-     * - transmission: A (Automatic), M (Manual), CVT, Dual Clutch (may not provide to users)
      * - transmission_display (called 'transmission' to users)
      * ...
+     * transmission: A (Automatic), M (Manual), CVT, Dual Clutch (only for note, may not provide to users)
+     * <p>
+     * This method searches items by given parameters. Pagination and sorting is applied.
      */
     @GetMapping("/list")
     @ResponseBody
-    public CommonReturnType listCarsByOrder(@RequestParam(name = "bodyType", required = false) String bodyType,
+    public CommonReturnType listCarsByOrder(@RequestParam(name = "price", required = false) String priceRange,
+                                            @RequestParam(name = "bodyType", required = false) String bodyType,
                                             @RequestParam(name = "city", required = false) String city,
                                             @RequestParam(name = "makeName", required = false) String makeName,
+                                            @RequestParam(name = "makeName", required = false) String modelName,
                                             @RequestParam(name = "year", required = false) String yearRange,
                                             @RequestParam(name = "mileage", required = false, defaultValue = "-1") int mileage,
                                             @RequestParam(name = "maximumSeating", required = false, defaultValue = "-1") int maximumSeating,
                                             @RequestParam(name = "transmissionDisplay", required = false) String transmissionDisplay,
                                             @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
-                                            @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize) {
+                                            @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize,
+                                            @RequestParam(name = "sort", required = false, defaultValue = "") String sortField,
+                                            @RequestParam(name = "sortOrder", required = false, defaultValue = "asc") String sortOrder) {
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        if (isSortFieldAvailable(sortField)) {
+            if (StringUtils.equals(sortOrder, "asc")) {
+                pageable = PageRequest.of(pageIndex, pageSize, Sort.by(sortField).ascending());
+            } else if (StringUtils.equals(sortOrder, "desc")) {
+                pageable = PageRequest.of(pageIndex, pageSize, Sort.by(sortField).descending());
+            }
+        }
+
         // Page<Car> page =  carService.listCarsByBodyType(bodyType, pageable);
 
-        Specification<Car> spec = getCarSpec(bodyType, city, makeName, yearRange, mileage, maximumSeating, transmissionDisplay);
+        Specification<Car> spec = getCarSpec(priceRange, bodyType, city, makeName, modelName, yearRange, mileage, maximumSeating, transmissionDisplay);
 
         // return page 0 with 10 records if pageIndex = 0 and pageSize = 10
         Page<Car> page = carService.listCarsWithSpecification(spec, pageable);
@@ -122,9 +139,16 @@ public class CarController extends BaseController {
         return carVO;
     }
 
-    private Specification<Car> getCarSpec(String bodyType, String city, String makeName, String yearRange,
-                                          int mileage, int maximumSeating, String transmissionDisplay) {
+    private Specification<Car> getCarSpec(String priceRange, String bodyType, String city, String makeName, String modelName,
+                                          String yearRange, int mileage, int maximumSeating, String transmissionDisplay) {
         CarSpecificationBuilder builder = new CarSpecificationBuilder();
+        if (StringUtils.isNotEmpty(priceRange)) {
+            // the given parameter in url will be year = xxxx-yyyy, then the sql condition will be year >= xxxx and year <= yyyy
+            int minPrice = Integer.valueOf(priceRange.substring(0, priceRange.indexOf("-")));
+            int maxPrice = Integer.valueOf(priceRange.substring(priceRange.indexOf("-") + 1));
+            builder.with("price", SearchOperation.GREATER_THAN, minPrice);
+            builder.with("price", SearchOperation.LESS_THAN, maxPrice);
+        }
         if (StringUtils.isNotEmpty(bodyType)) {
             // if bodyType = "SUV", then the sql condition will be bodyType = "SUV"
             builder.with("bodyType", SearchOperation.EQUALITY, bodyType);
@@ -134,6 +158,9 @@ public class CarController extends BaseController {
         }
         if (StringUtils.isNotEmpty(makeName)) {
             builder.with("makeName", SearchOperation.EQUALITY, makeName);
+        }
+        if (StringUtils.isNotEmpty(modelName)) {
+            builder.with("modelName", SearchOperation.EQUALITY, makeName);
         }
         if (StringUtils.isNotEmpty(yearRange)) {
             // the given parameter in url will be year = xxxx-yyyy, then the sql condition will be year >= xxxx and year <= yyyy
@@ -154,5 +181,13 @@ public class CarController extends BaseController {
         }
         Specification<Car> spec = builder.build();
         return spec;
+    }
+
+    /**
+     * The results can be sorted by price and year
+     */
+    private boolean isSortFieldAvailable(String sortField) {
+        return StringUtils.equals(sortField, "price")
+                || StringUtils.equals(sortField, "year");
     }
 }
