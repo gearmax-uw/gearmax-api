@@ -1,6 +1,7 @@
 package com.uw.gearmax.gearmaxapi.service;
 
 import com.uw.gearmax.gearmaxapi.domain.Car;
+import com.uw.gearmax.gearmaxapi.error.BusinessException;
 import com.uw.gearmax.gearmaxapi.repository.CarRepository;
 import com.uw.gearmax.gearmaxapi.service.impl.CarServiceImpl;
 import com.uw.gearmax.gearmaxapi.validator.ValidationResult;
@@ -19,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -74,6 +77,15 @@ public class CarServiceImplIntegrationTest {
         carService.removeCar(car1.getId());
 
         verify(carRepository, times(1)).deleteById(anyLong());
+    }
+
+    @Test
+    public void givenNotExistCarToRemoveThenShouldThrowException() {
+        Optional<Car> notExistCar = Optional.empty();
+        when(carService.getCarById(anyLong())).thenReturn(notExistCar);
+
+        BusinessException e = assertThrows(BusinessException.class, () -> carService.removeCar(anyLong()));
+        assertEquals(e.getErrMsg(), "Car to be removed does not exist");
     }
 
 //    @Test

@@ -5,6 +5,7 @@ import com.uw.gearmax.gearmaxapi.controller.viewobject.CarVO;
 import com.uw.gearmax.gearmaxapi.domain.Car;
 import com.uw.gearmax.gearmaxapi.response.CommonReturnType;
 import com.uw.gearmax.gearmaxapi.service.CarService;
+import com.uw.gearmax.gearmaxapi.service.DepreciatedCarService;
 import com.uw.gearmax.gearmaxapi.validator.ValidatorImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,8 @@ public class CarControllerIntegrationTest {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @MockBean
+    private DepreciatedCarService depreciatedCarService;
     @MockBean
     private CarService carService;
 
