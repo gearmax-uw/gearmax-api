@@ -28,7 +28,11 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/car")
-public class CarController extends BaseController {
+public class CarController {
+
+    private static final String PRICE_FIELD_IN_CAR_SQL = "price";
+    private static final String PRICE_PARAM_IN_URL = "price";
+    private static final String YEAR_PARAM_IN_URL = "year";
 
     @Autowired
     private CarService carService;
@@ -121,8 +125,6 @@ public class CarController extends BaseController {
             }
         }
 
-        // Page<Car> page =  carService.listCarsByBodyType(bodyType, pageable);
-
         Specification<Car> spec = getCarSpec(priceRange, bodyType, city, makeName, modelName, yearRange, mileage, maximumSeating, transmissionDisplay);
 
         // return page 0 with 10 records if pageIndex = 0 and pageSize = 10
@@ -131,15 +133,13 @@ public class CarController extends BaseController {
         List<Car> cars = page.getContent();
         List<CarVO> carVOs = cars.stream().map(car -> {
             // check if car is depreciated
-            if (car.getDepreciated()) {
+            if (Boolean.TRUE.equals(car.getDepreciated())) {
                 // if it is, get the depreciated car from repo
                 DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
                 // copy both car's fields and depreciated car's fields to depreciated car's vo as DepreciatedCar extends Car
-                DepreciatedCarVO depreciatedCarVO = convertDepreciatedCarVOFromEntity(car, depreciatedCar);
-                return depreciatedCarVO;
+                return convertDepreciatedCarVOFromEntity(car, depreciatedCar);
             }
-            CarVO carVO = this.convertCarVOFromEntity(car);
-            return carVO;
+            return this.convertCarVOFromEntity(car);
         }).collect(Collectors.toList());
         return CommonReturnType.create(carVOs);
     }
@@ -181,10 +181,10 @@ public class CarController extends BaseController {
         CarSpecificationBuilder builder = new CarSpecificationBuilder();
         if (StringUtils.isNotEmpty(priceRange)) {
             // the given parameter in url will be year = xxxx-yyyy, then the sql condition will be year >= xxxx and year <= yyyy
-            int minPrice = Integer.valueOf(priceRange.substring(0, priceRange.indexOf("-")));
-            int maxPrice = Integer.valueOf(priceRange.substring(priceRange.indexOf("-") + 1));
-            builder.with("price", SearchOperation.GREATER_THAN, minPrice);
-            builder.with("price", SearchOperation.LESS_THAN, maxPrice);
+            int minPrice = Integer.parseInt(priceRange.substring(0, priceRange.indexOf("-")));
+            int maxPrice = Integer.parseInt(priceRange.substring(priceRange.indexOf("-") + 1));
+            builder.with(PRICE_FIELD_IN_CAR_SQL, SearchOperation.GREATER_THAN, minPrice);
+            builder.with(PRICE_FIELD_IN_CAR_SQL, SearchOperation.LESS_THAN, maxPrice);
         }
         if (StringUtils.isNotEmpty(bodyType)) {
             // if bodyType = "SUV", then the sql condition will be bodyType = "SUV"
@@ -201,8 +201,8 @@ public class CarController extends BaseController {
         }
         if (StringUtils.isNotEmpty(yearRange)) {
             // the given parameter in url will be year = xxxx-yyyy, then the sql condition will be year >= xxxx and year <= yyyy
-            int minYear = Integer.valueOf(yearRange.substring(0, yearRange.indexOf("-")));
-            int maxYear = Integer.valueOf(yearRange.substring(yearRange.indexOf("-") + 1));
+            int minYear = Integer.parseInt(yearRange.substring(0, yearRange.indexOf("-")));
+            int maxYear = Integer.parseInt(yearRange.substring(yearRange.indexOf("-") + 1));
             builder.with("year", SearchOperation.GREATER_THAN, minYear);
             builder.with("year", SearchOperation.LESS_THAN, maxYear);
         }
@@ -216,15 +216,14 @@ public class CarController extends BaseController {
         if (StringUtils.isNotEmpty(transmissionDisplay)) {
             builder.with("transmissionDisplay", SearchOperation.EQUALITY, transmissionDisplay);
         }
-        Specification<Car> spec = builder.build();
-        return spec;
+        return builder.build();
     }
 
     /**
      * The results can be sorted by price and year
      */
     private boolean isSortFieldAvailable(String sortField) {
-        return StringUtils.equals(sortField, "price")
-                || StringUtils.equals(sortField, "year");
+        return StringUtils.equals(sortField, PRICE_PARAM_IN_URL)
+                || StringUtils.equals(sortField, YEAR_PARAM_IN_URL);
     }
 }

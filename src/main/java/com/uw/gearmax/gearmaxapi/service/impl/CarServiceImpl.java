@@ -39,9 +39,7 @@ public class CarServiceImpl implements CarService {
             throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR, result.getErrMsg());
         }
 
-        Car returnedCar = carRepository.save(car);
-
-        return returnedCar;
+        return carRepository.save(car);
     }
 
     @Override

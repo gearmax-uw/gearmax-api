@@ -82,7 +82,7 @@ public class Car {
 
     @Column(name = "wheelbase", nullable = false)
     @Digits(integer = 3, fraction = 1)
-    private BigDecimal wheelbase = new BigDecimal(0.0);
+    private BigDecimal wheelbase = BigDecimal.valueOf(0.0);
 
     @Column(name = "city_fuel_economy", nullable = false)
     private Integer cityFuelEconomy = 0;
@@ -92,14 +92,14 @@ public class Car {
 
     @Column(name = "fuel_tank_volume", nullable = false)
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal fuelTankVolume = new BigDecimal(0.0);
+    private BigDecimal fuelTankVolume = BigDecimal.valueOf(0.0);
 
     @Column(name = "fuel_type", nullable = false)
     private String fuelType = ""; // Gasoline/Diesel/Biodiesel/Flex Fuel Vehicle/Electric/Hybrid
 
     @Column(name = "seller_rating", nullable = false)
     @Digits(integer = 1, fraction = 1, message = "Rating must be between 0-5")
-    private BigDecimal sellerRating = new BigDecimal(0.0);
+    private BigDecimal sellerRating = BigDecimal.valueOf(0.0);
 
     @Column(name = "owner_count", nullable = false)
     private Integer ownerCount = 0;
@@ -109,23 +109,23 @@ public class Car {
 
     @Column(name = "back_legroom", nullable = false)
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal backLegroom = new BigDecimal(0.0);
+    private BigDecimal backLegroom = BigDecimal.valueOf(0.0);
 
     @Column(name = "front_legroom", nullable = false)
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal frontLegroom = new BigDecimal(0.0);
+    private BigDecimal frontLegroom = BigDecimal.valueOf(0.0);
 
     @Column(name = "height", nullable = false)
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal height = new BigDecimal(0.0);
+    private BigDecimal height = BigDecimal.valueOf(0.0);
 
     @Column(name = "length", nullable = false)
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal length = new BigDecimal(0.0);
+    private BigDecimal length = BigDecimal.valueOf(0.0);
 
     @Column(name = "width", nullable = false)
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal width = new BigDecimal(0.0);
+    private BigDecimal width = BigDecimal.valueOf(0.0);
 
     @Column(name = "maximum_seating", nullable = false)
     private Integer maximumSeating = 0;
@@ -141,7 +141,7 @@ public class Car {
     private String mainPictureUrl = "";
 
     @Column(name = "is_new", nullable = false)
-    private final Boolean isNew = false;
+    private Boolean isNew = false;
 
     @Column(name = "zip", nullable = false)
     @NotEmpty(message = "Address ZIP cannot be empty")
@@ -463,7 +463,7 @@ public class Car {
     }
 
     public void setNew(Boolean isNew) {
-        isNew = isNew;
+        this.isNew = isNew;
     }
 
     public String getZip() {

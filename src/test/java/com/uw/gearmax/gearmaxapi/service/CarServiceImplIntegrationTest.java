@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CarServiceImplIntegrationTest {
+class CarServiceImplIntegrationTest {
 
     @Mock
     private CarRepository carRepository;
@@ -58,7 +58,7 @@ public class CarServiceImplIntegrationTest {
     }
 
     @Test
-    public void givenCarToSaveShouldReturnSavedCar() throws Exception {
+    void givenCarToSaveShouldReturnSavedCar() throws Exception {
         ValidationResult fakeValidationResult = new ValidationResult();
         fakeValidationResult.setHasErrors(false);
 
@@ -71,7 +71,7 @@ public class CarServiceImplIntegrationTest {
     }
 
     @Test
-    public void givenIdToRemoveThenShouldRemoveCar() throws Exception {
+    void givenIdToRemoveThenShouldRemoveCar() throws Exception {
         when(carService.getCarById(anyLong())).thenReturn(Optional.of(car1));
 
         carService.removeCar(car1.getId());
@@ -80,12 +80,12 @@ public class CarServiceImplIntegrationTest {
     }
 
     @Test
-    public void givenNotExistCarToRemoveThenShouldThrowException() {
+    void givenNotExistCarToRemoveThenShouldThrowException() {
         Optional<Car> notExistCar = Optional.empty();
         when(carService.getCarById(anyLong())).thenReturn(notExistCar);
 
         BusinessException e = assertThrows(BusinessException.class, () -> carService.removeCar(anyLong()));
-        assertEquals(e.getErrMsg(), "Car to be removed does not exist");
+        assertEquals("Car to be removed does not exist", e.getErrMsg());
     }
 
 //    @Test

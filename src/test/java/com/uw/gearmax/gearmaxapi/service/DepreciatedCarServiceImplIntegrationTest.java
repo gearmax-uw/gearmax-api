@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DepreciatedCarServiceImplIntegrationTest {
+class DepreciatedCarServiceImplIntegrationTest {
 
     @Mock
     private DepreciatedCarRepository depreciatedCarRepository;
@@ -43,7 +43,7 @@ public class DepreciatedCarServiceImplIntegrationTest {
     }
 
     @Test
-    public void givenDepreciatedCarToSaveShouldReturnSavedCar() throws Exception {
+    void givenDepreciatedCarToSaveShouldReturnSavedCar() throws Exception {
         when(depreciatedCarRepository.save(any(DepreciatedCar.class))).thenReturn(depreciatedCar1);
 
         depreciatedCarService.saveDepreciatedCar(depreciatedCar1);
@@ -52,7 +52,7 @@ public class DepreciatedCarServiceImplIntegrationTest {
     }
 
     @Test
-    public void givenIdToRemoveThenShouldRemoveDepreciatedCar() throws Exception {
+    void givenIdToRemoveThenShouldRemoveDepreciatedCar() throws Exception {
         when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(Optional.of(depreciatedCar1));
 
         depreciatedCarService.removeDepreciatedCar(depreciatedCar1.getId());
@@ -61,12 +61,12 @@ public class DepreciatedCarServiceImplIntegrationTest {
     }
 
     @Test
-    public void givenNotExistDepreciatedCarToRemoveThenShouldThrowException() {
+    void givenNotExistDepreciatedCarToRemoveThenShouldThrowException() {
         Optional<DepreciatedCar> notExistDepreciatedCar = Optional.empty();
         when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(notExistDepreciatedCar);
 
         BusinessException e = assertThrows(BusinessException.class, () -> depreciatedCarService.removeDepreciatedCar(anyLong()));
-        assertEquals(e.getErrMsg(), "Depreciated car to be removed does not exist");
+        assertEquals("Depreciated car to be removed does not exist", e.getErrMsg());
     }
 
     private DepreciatedCar createDepreciatedCar(Long id) {

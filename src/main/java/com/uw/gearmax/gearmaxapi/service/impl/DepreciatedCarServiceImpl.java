@@ -23,8 +23,7 @@ public class DepreciatedCarServiceImpl implements DepreciatedCarService {
 
     @Override
     public Optional<DepreciatedCar> getDepreciatedCarById(Long id) {
-        Optional<DepreciatedCar> depreciatedCar = depreciatedCarRepository.findById(id);
-        return depreciatedCar;
+        return depreciatedCarRepository.findById(id);
     }
 
     @Override

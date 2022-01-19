@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CarController.class)
-public class CarControllerIntegrationTest {
+class CarControllerIntegrationTest {
 
     ValidatorImpl validator;
     @Autowired
@@ -41,7 +41,7 @@ public class CarControllerIntegrationTest {
     private CarService carService;
 
     @Test
-    public void addCarShouldReturnCarVO() throws Exception {
+    void addCarShouldReturnCarVO() throws Exception {
         RequestBuilder request = MockMvcRequestBuilders
                 .post("/car/add")
                 .accept(MediaType.APPLICATION_JSON)
@@ -73,7 +73,7 @@ public class CarControllerIntegrationTest {
     }
 
     @Test
-    public void removeCarShouldReturnSuccessCode() throws Exception {
+    void removeCarShouldReturnSuccessCode() throws Exception {
 
         RequestBuilder request = MockMvcRequestBuilders
                 .delete("/car/delete/1")
