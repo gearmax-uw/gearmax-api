@@ -1,12 +1,29 @@
 # GearMax-API
 
-This is a Spring Boot backend project that provides REST APIs to deliver web services.
+GearMax is a web application that helps buyers find the best-fit cars, assists sellers to post their used cars and provides 
+price prediction functionalities.
+
+For a lot of reasons such as improving the scalability, we separate the web app into three services: backend, frontend and database. 
+The code of the three services is managed in three git repositories. This project, **GearMax-API** is responsible for providing the 
+backend service. Specifically, this is a Spring Boot backend project that provides REST APIs to deliver web services.
+
+### The 12-Factor Methodology
+
+GearMax follows the 12-factor methodology, which is the best practice for SaaS development, to develop applications that 
+run as services.
+
+For more explanations:
+
+[What is the Twelve-Factor App?](https://12factor.net/)
+
+[Twelve-Factor Methodology in a Spring Boot Microservice](https://www.baeldung.com/spring-boot-12-factor)
 
 ### Technologies
 The technologies that the project uses:
 - Spring Boot
 - Spring JPA
 - MySQL
+- React (gearmax-react-app)
 
 ### Environment Requirements
 To run this project locally, your environments must meet the following criteria:
@@ -89,12 +106,11 @@ encrypt a value *'InfoToBeEncrypted'* using the salt *'test'*, you can run comma
 You will see the output encrypted value *ENC(/nJHoNctIHpmuaGcmqqUIt5EPw/3/CWzz7RVZrOdhof3NnyvMezwO84n+WdESXLu)*, so you can 
 replace the old original password with the encrypted value. Also, do not forget to specify your salt in the property file as well: `jasypt.encryptor.password=test`.
 
-
 ### How to send requests after the app starts?
 
 You can directly send http requests or use Postman. Either way is fine.
 
-Try searching a car by given parameters:
+**Try searching a car by given parameters**:
 
 `http://localhost:8080/car/list?bodyType=SUV_Crossover&year=2010-2019`
 
@@ -103,21 +119,24 @@ Try searching a car by given parameters:
 
 **Only add/delete record to your local MySQL databases. Don't perform these operations to the production server.**
 
-Try adding a car record:
+**Try adding a car record**:
 
 - use Postman:
   ![Add Car by Postman](/img/postman_add_car.png)
   
 Then you will see the new record in database.
       
-Try deleting a car record:
+**Try deleting a car record**:
 
 - use Postman:
 ![Delete Car by Postman](img/postman_delete_car.png)
   
-### For Developers
+### For Contributors 
 
 If you would like to contribute to this project, make a new git branch and work on that branch. Make sure to commit the 
 code to the new branch and make a pull request to merge to the main branch.
 
 Before committing the code, always reformat the code. In Intellij IDEA, the formatting shortcut for Windows is **Ctrl+Alt+Shift+L**.
+
+Also, we recommend using SonarLint to fix your code quality issues before your committing the code. Here is the [link](https://www.sonarlint.org/) 
+of SonarLint IDE extensions.
