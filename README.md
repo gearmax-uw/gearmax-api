@@ -80,25 +80,28 @@ The *controller/viewobject* includes classes which represents view objects. Thos
 but they are wrapped to only have attributes expected to be displayed to users/developers. In controllers, we only return view 
 objects rather than entity objects.
 
-### How to run this app locally for development purpose by using your own MySQL server?
+### How to run this app in either dev or prod environment?
 
-1. Go to *gearmax-api* and run `mvn clean install`.
-2. Comment out these lines in the file * gearmax-api/src/main/resources/application.properties*.
-```
-spring.datasource.url=jdbc:mysql://localhost/demo?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC&characterEncoding=utf-8
-spring.datasource.username=root
-spring.datasource.password=root
-```
-3. Set up a database named *demo* with MySQL.
-4. Find the file *gearmax-api/src/main/resources/application.properties* and change the configuration:
+If you would like to run this app in dev (development) environment, go to *gearmax-api/src/main/resources/application.properties* 
+and specify `spring.profiles.active=dev`. This specification will deploy the configurations in *application-dev.properties* when you start your app.
+
+If you would like to run this app in prod (production) environment, find *application.properties* and specify
+`spring.profiles.active=prod`. This specification will deploy the configurations in *application-prod.properties* when you start your app.
+
+Then go to *gearmax-api* and run `mvn clean install`.
+
+#### How to configure this app in dev environment, which requires using your own MySQL server?
+
+1. Set up a database named *demo* with MySQL.
+2. Find the file *gearmax-api/src/main/resources/application-dev.properties* and change the configuration:
     - spring.datasource.username=[your MySQL username]
     - spring.datasource.password=[your MySQL password]
-5. Run *main()* function in *GearmaxApiApplication* class.
+3. Run *main()* function in *GearmaxApiApplication* class.
 
-### How to do the configuration if using the production MySQL server?
+#### How to configure this app in prod environment, which requires using the production MySQL server?
 
-If you would like to connect the backend app to the production MySQL server, you have to change the url, username, and password 
-as the last section states based on your production environment settings.
+If you would like to change the production environment settings/configurations, find *gearmax-api/src/main/resources/application-prod.properties* 
+and update the settings.
 
 To avoid leaking sensitive information, we use [Jasypt](https://github.com/ulisesbocchio/jasypt-spring-boot) to do the password encryption. 
 Jasypt allows you to only specify the encrypted password in the *application.properties* file. For example, if you would like to 
