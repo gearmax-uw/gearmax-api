@@ -80,6 +80,10 @@ The *controller/viewobject* includes classes which represents view objects. Thos
 but they are wrapped to only have attributes expected to be displayed to users/developers. In controllers, we only return view 
 objects rather than entity objects.
 
+### CI/CD Process
+
+![CI/CD](/img/gearmax-cicd.png)
+
 ### How to run this app in either dev or prod environment?
 
 If you would like to run this app in dev (development) environment, go to *gearmax-api/src/main/resources/application.properties* 
