@@ -1,0 +1,31 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: gearmax-api CI
+
+on:
+  push:
+    branches: [ main ] # workflow is triggered when push to main branch occurs
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2 # the checkout step downloads a copy of your repository on the runner
+      - uses: actions/setup-java@v2 # configures Java 11 JDK by Adoptium
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          cache: maven
+      - run: mvn clean install
+      - uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: y82cheng/gearmax-api
+          tags: latest
+          registry: docker.io
+          dockerfile: Dockerfile
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
