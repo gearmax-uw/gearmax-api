@@ -5,6 +5,7 @@ import com.uw.gearmax.gearmaxapi.controller.viewobject.DepreciatedCarVO;
 import com.uw.gearmax.gearmaxapi.domain.Car;
 import com.uw.gearmax.gearmaxapi.domain.DepreciatedCar;
 import com.uw.gearmax.gearmaxapi.error.BusinessException;
+import com.uw.gearmax.gearmaxapi.error.EmBusinessError;
 import com.uw.gearmax.gearmaxapi.query.CarSpecificationBuilder;
 import com.uw.gearmax.gearmaxapi.query.SearchOperation;
 import com.uw.gearmax.gearmaxapi.response.CommonReturnType;
@@ -80,6 +81,35 @@ public class CarController {
         // TODO: first determine if the id corresponds a DepreciatedCar/PickupTruck. If it is, remove it from repo (CarRepo and DepreciatedCarRepo)
         carService.removeCar(id);
         return CommonReturnType.create(null);
+    }
+
+    @GetMapping("/{id}")
+    @ResponseBody
+    public CommonReturnType getCar(@PathVariable(value = "id") Long id) throws BusinessException {
+        Optional<Car> optionalCar = carService.getCarById(id);
+        Car car;
+        if (optionalCar.isPresent()) {
+            car = optionalCar.get();
+        } else {
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
+                    "Car does not exist");
+        }
+
+        // TODO: check if car is determined as both depreciated and pickup truck; if it is, get it and return vo
+
+        // check if car is determined as depreciated
+        if (Boolean.TRUE.equals(car.getDepreciated())) {
+            // car is determined as depreciated
+            DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
+            DepreciatedCarVO depreciatedCarVO = convertDepreciatedCarVOFromEntity(car, depreciatedCar);
+            return CommonReturnType.create(depreciatedCarVO);
+        }
+
+        // TODO: check if car is determined as a pickup truck; if it is, get it and return vo
+
+        // the car must be a normal car
+        CarVO carVO = convertCarVOFromEntity(car);
+        return CommonReturnType.create(carVO);
     }
 
     /**
