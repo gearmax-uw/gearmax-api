@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +30,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Controller
@@ -47,10 +49,12 @@ public class CarController {
     @Autowired
     private DepreciatedCarService depreciatedCarService;
 
-
-    // car/add?vin=abcd&&...&&country=USA
     // car/add?vin=abcd&&...&&country=USA&&bedHeight=1
+    // car/add?vin=abcd&&...&&country=USA
     // car/add?vin=abcd&&...&&country=USA&&bedHeight=1&&isFrameDamaged=true
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @PostMapping("/add")
     @ResponseBody
     public CommonReturnType addCar(@RequestParam(name = "vin") String vin,
@@ -139,13 +143,21 @@ public class CarController {
     @GetMapping("/{id}")
     @ResponseBody
     public CommonReturnType getCar(@PathVariable(value = "id") Long id) throws BusinessException {
-        Optional<Car> optionalCar = carService.getCarById(id);
-        Car car;
-        if (optionalCar.isPresent()) {
-            car = optionalCar.get();
-        } else {
-            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
-                    "Car does not exist");
+        // try to get the car object from redis
+        Car car = (Car) redisTemplate.opsForValue().get("car_" + id);
+        if (car == null) { // if the car is not found from redis
+            // get car from database
+            Optional<Car> optionalCar = carService.getCarById(id);
+            if (optionalCar.isPresent()) {
+                car = optionalCar.get();
+                // save car to redis
+                redisTemplate.opsForValue().set("car_"+id, car);
+                // the key/value will be expired after 10 minutes
+                redisTemplate.expire("car_"+id, 10, TimeUnit.MINUTES);
+            } else {
+                throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
+                        "Car does not exist");
+            }
         }
 
         if (Boolean.TRUE.equals(car.getDepreciated())
