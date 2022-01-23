@@ -3,9 +3,12 @@ package com.uw.gearmax.gearmaxapi.domain;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 
 @Entity(name = "depreciation_info")
-public class DepreciatedCar {
+public class DepreciatedCar implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     private Long id;
