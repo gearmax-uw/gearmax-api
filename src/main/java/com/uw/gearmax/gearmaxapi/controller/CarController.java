@@ -2,8 +2,10 @@ package com.uw.gearmax.gearmaxapi.controller;
 
 import com.uw.gearmax.gearmaxapi.controller.viewobject.CarVO;
 import com.uw.gearmax.gearmaxapi.controller.viewobject.DepreciatedCarVO;
+import com.uw.gearmax.gearmaxapi.controller.viewobject.PickupTruckVO;
 import com.uw.gearmax.gearmaxapi.domain.Car;
 import com.uw.gearmax.gearmaxapi.domain.DepreciatedCar;
+import com.uw.gearmax.gearmaxapi.domain.PickupTruck;
 import com.uw.gearmax.gearmaxapi.error.BusinessException;
 import com.uw.gearmax.gearmaxapi.error.EmBusinessError;
 import com.uw.gearmax.gearmaxapi.query.CarSpecificationBuilder;
@@ -11,6 +13,7 @@ import com.uw.gearmax.gearmaxapi.query.SearchOperation;
 import com.uw.gearmax.gearmaxapi.response.CommonReturnType;
 import com.uw.gearmax.gearmaxapi.service.CarService;
 import com.uw.gearmax.gearmaxapi.service.DepreciatedCarService;
+import com.uw.gearmax.gearmaxapi.service.PickupTruckService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +41,8 @@ public class CarController {
 
     @Autowired
     private CarService carService;
-
+    @Autowired
+    private PickupTruckService pickupTruckService;
     @Autowired
     private DepreciatedCarService depreciatedCarService;
 
@@ -69,6 +74,16 @@ public class CarController {
 
         // TODO: when returnedCar is determined as DepreciatedCar/PickupTruck, you need to create DepreciatedCar/PickupTruck and save them in repo
 
+        if (StringUtils.equals(returnedCar.getBodyType(), "pickup_truck")) { // is a pickup truck
+            PickupTruck truck = new PickupTruck(); // create a pickup truck object
+            truck.setId(returnedCar.getId());
+            truck.setBedHeight(BedHeight);
+
+            // store pickup truck object to repo
+            PickupTruck returnedTruck = pickupTruckService.savePickupTruck(truck);
+            PickupTruckVO pickupTruckVO = convertPickupTruckVOFromEntity(returnedCar, returnedTruck);
+            return CommonReturnType.create(pickupTruckVO);
+        }
         // wrap Car to CarVO
         CarVO carVO = convertCarVOFromEntity(returnedCar);
 
@@ -173,7 +188,26 @@ public class CarController {
         }).collect(Collectors.toList());
         return CommonReturnType.create(carVOs);
     }
+    @PostMapping("/addPickupTruck")
+    @ResponseBody
+    public CommonReturnType addPickupTruck(@RequestParam(name = "bedHeight") BigDecimal bedHeight,
+                                           @RequestParam(name="bedLength")BigDecimal bedLength,
+                                           @RequestParam(name="bed",required = false)String bed,
+                                           @RequestParam(name="cabin",required = false)String cabin) {
 
+
+        PickupTruck truck = new PickupTruck();
+        truck.setId(1L);
+        truck.setBedHeight(bedHeight);
+        truck.setBedLength(bedLength);
+        truck.setBed(bed);
+        truck.setCabin(cabin);
+
+        PickupTruck returnedTruck = pickupTruckService.savePickupTruck(truck);
+        PickupTruckVO truckVO = convertPickupTruckVOFromEntity(returnedTruck);
+
+        return CommonReturnType.create(truckVO);
+    }
     @GetMapping("/test")
     @ResponseBody
     public String test() {
@@ -204,6 +238,12 @@ public class CarController {
         BeanUtils.copyProperties(car, depreciatedCarVO);
         BeanUtils.copyProperties(depreciatedCar, depreciatedCarVO);
         return depreciatedCarVO;
+    }
+    private PickupTruckVO convertPickupTruckVOFromEntity(Car car, PickupTruck truck) {
+        PickupTruckVO pickupTruckVO = new PickupTruckVO();
+        BeanUtils.copyProperties(car, pickupTruckVO);
+        BeanUtils.copyProperties(truck, pickupTruckVO);
+        return pickupTruckVO;
     }
 
     private Specification<Car> getCarSpec(String priceRange, String bodyType, String city, String makeName, String modelName,
