@@ -46,6 +46,9 @@ public class CarController {
     @Autowired
     private DepreciatedCarService depreciatedCarService;
 
+
+    // car/add?vin=abcd&&...&&country=USA
+    // car/add?vin=abcd&&...&&country=USA&&bedHeight=1
     @PostMapping("/add")
     @ResponseBody
     public CommonReturnType addCar(@RequestParam(name = "vin") String vin,
@@ -56,7 +59,10 @@ public class CarController {
                                    @RequestParam(name = "bodyType") String bodyType,
                                    @RequestParam(name = "zip") String zip,
                                    @RequestParam(name = "city") String city,
-                                   @RequestParam(name = "country") String country) throws BusinessException {
+                                   @RequestParam(name = "country") String country,
+                                   @RequestParam(name = "bedLength", required = false) BigDecimal bedLength,
+                                   @RequestParam(name = "bed", required = false) String bed,
+                                   @RequestParam(name = "cabin", required = false) String cabin) throws BusinessException {
         Car car = new Car();
         car.setVin(vin);
         car.setSellerId(sellerId);
@@ -72,12 +78,14 @@ public class CarController {
 
         Car returnedCar = carService.saveCar(car);
 
-        // TODO: when returnedCar is determined as DepreciatedCar/PickupTruck, you need to create DepreciatedCar/PickupTruck and save them in repo
+        // TODO: when returnedCar is determined as DepreciatedCar, you need to create DepreciatedCar and save them in repo
 
         if (StringUtils.equals(returnedCar.getBodyType(), "pickup_truck")) { // is a pickup truck
             PickupTruck truck = new PickupTruck(); // create a pickup truck object
             truck.setId(returnedCar.getId());
-            truck.setBedHeight(BedHeight);
+            truck.setBedLength(bedLength);
+            truck.setBed(bed);
+            truck.setCabin(cabin);
 
             // store pickup truck object to repo
             PickupTruck returnedTruck = pickupTruckService.savePickupTruck(truck);
@@ -90,14 +98,23 @@ public class CarController {
         return CommonReturnType.create(carVO);
     }
 
+    // car/delete/1 => delete the car with id 1
     @DeleteMapping("/delete/{id}")
     @ResponseBody
     public CommonReturnType removeCar(@PathVariable(value = "id") Long id) throws BusinessException {
-        // TODO: first determine if the id corresponds a DepreciatedCar/PickupTruck. If it is, remove it from repo (CarRepo and DepreciatedCarRepo)
-        carService.removeCar(id);
+        Car returnedCar = carService.removeCar(id);
+        // determine if the car to be removed is depreciated
+        if (Boolean.TRUE.equals(returnedCar.getDepreciated())) {
+            // it is depreciated, so remove it from depreciatedRepo
+            depreciatedCarService.removeDepreciatedCar(id);
+        }
+
+        // TODO: first determine if the id corresponds a PickupTruck. If it is, remove it from PickupTruck repo
+
         return CommonReturnType.create(null);
     }
 
+    // car/1 => get the detail of car with id 1
     @GetMapping("/{id}")
     @ResponseBody
     public CommonReturnType getCar(@PathVariable(value = "id") Long id) throws BusinessException {
@@ -188,26 +205,7 @@ public class CarController {
         }).collect(Collectors.toList());
         return CommonReturnType.create(carVOs);
     }
-    @PostMapping("/addPickupTruck")
-    @ResponseBody
-    public CommonReturnType addPickupTruck(@RequestParam(name = "bedHeight") BigDecimal bedHeight,
-                                           @RequestParam(name="bedLength")BigDecimal bedLength,
-                                           @RequestParam(name="bed",required = false)String bed,
-                                           @RequestParam(name="cabin",required = false)String cabin) {
 
-
-        PickupTruck truck = new PickupTruck();
-        truck.setId(1L);
-        truck.setBedHeight(bedHeight);
-        truck.setBedLength(bedLength);
-        truck.setBed(bed);
-        truck.setCabin(cabin);
-
-        PickupTruck returnedTruck = pickupTruckService.savePickupTruck(truck);
-        PickupTruckVO truckVO = convertPickupTruckVOFromEntity(returnedTruck);
-
-        return CommonReturnType.create(truckVO);
-    }
     @GetMapping("/test")
     @ResponseBody
     public String test() {
@@ -239,6 +237,7 @@ public class CarController {
         BeanUtils.copyProperties(depreciatedCar, depreciatedCarVO);
         return depreciatedCarVO;
     }
+
     private PickupTruckVO convertPickupTruckVOFromEntity(Car car, PickupTruck truck) {
         PickupTruckVO pickupTruckVO = new PickupTruckVO();
         BeanUtils.copyProperties(car, pickupTruckVO);

@@ -1,9 +1,10 @@
 package com.uw.gearmax.gearmaxapi.domain;
 
-import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.validation.constraints.Digits;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Entity
 public class PickupTruck {
@@ -12,10 +13,6 @@ public class PickupTruck {
 
     @Column(name = "bed", nullable = false)
     private String bed = "";
-
-    @Column(name = "bed_height", nullable = false)
-    @Digits(integer = 2, fraction = 1)
-    private BigDecimal bedHeight = BigDecimal.valueOf(0.0);
 
     @Column(name = "bed_length", nullable = false)
     @Digits(integer = 2, fraction = 1)
@@ -38,14 +35,6 @@ public class PickupTruck {
 
     public void setBed(String bed) {
         this.bed = bed;
-    }
-
-    public BigDecimal getBedHeight() {
-        return bedHeight;
-    }
-
-    public void setBedHeight(BigDecimal bedHeight) {
-        this.bedHeight = bedHeight;
     }
 
     public BigDecimal getBedLength() {

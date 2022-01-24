@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 public class PickupTruckVO {
     private String bed;
-    private BigDecimal bedHeight;
     private BigDecimal bedLength;
     private String cabin;
 
@@ -14,14 +13,6 @@ public class PickupTruckVO {
 
     public void setBed(String bed) {
         this.bed = bed;
-    }
-
-    public BigDecimal getBedHeight() {
-        return bedHeight;
-    }
-
-    public void setBedHeight(BigDecimal bedHeight) {
-        this.bedHeight = bedHeight;
     }
 
     public BigDecimal getBedLength() {
