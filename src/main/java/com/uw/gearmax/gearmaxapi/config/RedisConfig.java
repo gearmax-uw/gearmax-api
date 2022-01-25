@@ -4,35 +4,48 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.uw.gearmax.gearmaxapi.serializer.LocalDateJsonDeserializer;
 import com.uw.gearmax.gearmaxapi.serializer.LocalDateJsonSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-@Component
-@EnableRedisHttpSession(maxInactiveIntervalInSeconds = 3600)
+@Configuration
+@ComponentScan("com.uw.gearmax.gearmaxapi")
+@PropertySource("classpath:application.properties")
 public class RedisConfig {
-    @Bean
-    public RedisTemplate redisTemplate(RedisConnectionFactory redisConnectionFactory){
-        RedisTemplate redisTemplate = new RedisTemplate();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
 
-        //首先解决key的序列化方式
+    @Value("${spring.redis.host}")
+    private String redisHostName;
+
+    @Value("${spring.redis.port}")
+    private String redisPort;
+
+    @Bean
+    JedisConnectionFactory jedisConnectionFactory() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHostName, Integer.parseInt(redisPort));
+        return new JedisConnectionFactory(config);
+    }
+
+    @Bean
+    public RedisTemplate redisTemplate() {
+        RedisTemplate redisTemplate = new RedisTemplate();
+        redisTemplate.setConnectionFactory(jedisConnectionFactory());
+
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         redisTemplate.setKeySerializer(stringRedisSerializer);
 
-        //解决value的序列化方式
         Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
 
-        ObjectMapper objectMapper =  new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
         SimpleModule simpleModule = new SimpleModule();
-        // simpleModule.addSerializer(DateTime.class,new JodaDateTimeJsonSerializer());
-        // simpleModule.addDeserializer(DateTime.class,new JodaDateTimeJsonDeserializer());
         simpleModule.addSerializer(LocalDate.class, new LocalDateJsonSerializer());
         simpleModule.addDeserializer(LocalDate.class, new LocalDateJsonDeserializer());
 
