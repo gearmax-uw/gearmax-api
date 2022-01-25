@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+  # spring boot service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - "8080:8080"
+    depends_on:
+      - redis
+    restart: always
+  # redis service
+  redis:
+    container_name: gearmax_redis
+    image: redis:alpine
+    hostname: redis
+    ports:
+    - "6379:6379"
