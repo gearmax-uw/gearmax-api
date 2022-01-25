@@ -7,6 +7,33 @@ For a lot of reasons such as improving the scalability, we separate the web app 
 The code of the three services is managed in three git repositories. This project, **GearMax-API** is responsible for providing the 
 backend service. Specifically, this is a Spring Boot backend project that provides REST APIs to deliver web services.
 
+### Functionality Requirements
+
+Before the reading week, GearMax web app is expected to have the following functionalities:
+
+- Users will see the main page when they input the url of our website. 
+- The navigation bar on the main page can direct them to the search page.
+- Users can search posts of their interested used cars by filters, and the filters include:
+  - price range ([]-[], e.g., 1000-2000)
+  - bodyType (SUV_Crossover, Sedan, Coupe, Hatchback, Pickup Truck, Wagon, Minivan, Van, Convertible)
+  - make name/brands (Chrysler, Dodge, Mercedes-Benz, Nissan, Honda, Kia, Ford, Lincoln, Audi, Jaguar, Volkswagen, RAM, Porsche, Toyota, INFINITI, GMC, Acura, Maserati,
+    FIAT, Volvo, Mitsubishi, Buick, Mercury, Scion, Saab, MINI, Ferrari, Genesis, Saturn, Bentley, Suzuki, Tesla, Fisker, Pontiac, Lamborghini, smart, Hummer)
+  - model name (About 541 models given, we may not use this to be the filter) 
+  - city (About 80 cities)
+  - year range ([]-[], e.g., 2010-2012)
+  - mileage ([x], less than or equal to x)
+  - exterior color
+  - maximum seating ([x], less than or equal to x)
+  - transmission display (About 30 transmission display)
+  - options/features (not yet implemented)
+- When users input a wrong url, our website will always direct them to the search page.
+- Users can view the detailed information of a used car when they click a specific post.
+
+After the reading week, GearMax app is expected to have the following functionalities:
+- Users can sign in/log in to GearMax.
+- Signed users can post their used cars.
+- GearMax can predict the future price of used cars by users' given information.
+
 ### The 12-Factor Methodology
 
 GearMax follows the 12-factor methodology, which is the best practice for SaaS development, to develop applications that 
@@ -21,14 +48,11 @@ For more explanations:
 ### Technologies
 The technologies that the project uses:
 - Spring Boot
+- React (gearmax-react-app)
 - Spring JPA
 - MySQL
-- React (gearmax-react-app)
-
-### Environment Requirements
-To run this project locally, your environments must meet the following criteria:
-- Installed JDK (at least 11) and Maven
-- MySQL Server 8.0+
+- Redis
+- Docker
 
 ### Project Structure
 
@@ -84,7 +108,35 @@ objects rather than entity objects.
 
 ![CI/CD](/img/gearmax-cicd.png)
 
+### Environment Requirements
+To run this project locally, your environments must meet the following criteria:
+- Docker (RECOMMENDED!If u have Docker installed, everything will be super easy!)
+
+If you have Docker installed, please go to [docker-compose running guide](#how-to-run-this-app-in-docker-environment-recommended) to run this app.
+
+or
+
+- Installed JDK (at least 11) and Maven
+- MySQL Server 8.0+
+- Redis installed
+
+If you haven't Docker installed but have the above three items installed, please go to the [running guide](#how-to-run-this-app-in-either-dev-or-prod-environment) 
+to run this app.
+
+### How to run this app in Docker environment? [RECOMMENDED]
+
+Make sure you have Docker installed in your machine. Then go to *gearmax-api/* to run `docker-compose up` or 
+`docker-compose up -d` in detached mode to create containers which containerize our apps. If you run this in 
+detached mode, run `docker-compose stop` to exit these containerized running apps. 
+
+**Note:** `docker-compose up` will run the file with default name *docker-compose.yml*. This file will create two containers which 
+provides spring boot and redis services, and you still can use your local/remote MySQL server only if you configure it correctly. If 
+you prefer to use containers to provide MySQL service, you can run `docker-compose -f docker-compose-with-sql.yml up` which will start 
+up three containers (spring boot + redis + mysql) configured by *docker-compose-with-sql.yml* (haven't tested yet, hahaha...).
+
 ### How to run this app in either dev or prod environment?
+
+**WARNING: If you don't have MySQL or Redis installed, or you do not configure them correctly in the property file, the app will not build or run successfully!**
 
 If you would like to run this app in dev (development) environment, go to *gearmax-api/src/main/resources/application.properties* 
 and specify `spring.profiles.active=dev`. This specification will deploy the configurations in *application-dev.properties* when you start your app.
