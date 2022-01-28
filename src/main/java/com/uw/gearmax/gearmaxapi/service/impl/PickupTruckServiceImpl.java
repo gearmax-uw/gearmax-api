@@ -1,3 +1,5 @@
+package com.uw.gearmax.gearmaxapi.service.impl;
+
 import com.uw.gearmax.gearmaxapi.domain.PickupTruck;
 import com.uw.gearmax.gearmaxapi.error.BusinessException;
 import com.uw.gearmax.gearmaxapi.error.EmBusinessError;
@@ -17,7 +19,9 @@ public class PickupTruckServiceImpl implements PickupTruckService {
 
     @Override
     @Transactional
-    public PickupTruck savePickupTruck(PickupTruck truck) {return pickupTruckRepository.save(truck); return null;}
+    public PickupTruck savePickupTruck(PickupTruck truck) {
+        return pickupTruckRepository.save(truck);
+    }
 
     @Override
     public PickupTruck removePickupTruck(Long id) throws BusinessException {
@@ -36,6 +40,4 @@ public class PickupTruckServiceImpl implements PickupTruckService {
     public Optional<PickupTruck> getPickupTruckById(Long id) {
         return pickupTruckRepository.findById(id);
     }
-
-
 }

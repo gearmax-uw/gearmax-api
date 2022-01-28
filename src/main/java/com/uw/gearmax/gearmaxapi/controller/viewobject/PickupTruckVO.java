@@ -2,7 +2,7 @@ package com.uw.gearmax.gearmaxapi.controller.viewobject;
 
 import java.math.BigDecimal;
 
-public class PickupTruckVO {
+public class PickupTruckVO extends CarVO {
     private String bed;
     private BigDecimal bedLength;
     private String cabin;

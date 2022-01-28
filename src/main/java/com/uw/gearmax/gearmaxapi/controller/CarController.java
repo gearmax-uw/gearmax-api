@@ -38,6 +38,7 @@ public class CarController {
     private static final String PRICE_FIELD_IN_CAR_SQL = "price";
     private static final String PRICE_PARAM_IN_URL = "price";
     private static final String YEAR_PARAM_IN_URL = "year";
+    private static final String PICKUP_TRUCK_IN_CAR_SQL = "pickup-truck";
 
     @Autowired
     private CarService carService;
@@ -49,6 +50,7 @@ public class CarController {
 
     // car/add?vin=abcd&&...&&country=USA
     // car/add?vin=abcd&&...&&country=USA&&bedHeight=1
+    // car/add?vin=abcd&&...&&country=USA&&bedHeight=1&&isFrameDamaged=true
     @PostMapping("/add")
     @ResponseBody
     public CommonReturnType addCar(@RequestParam(name = "vin") String vin,
@@ -62,7 +64,8 @@ public class CarController {
                                    @RequestParam(name = "country") String country,
                                    @RequestParam(name = "bedLength", required = false) BigDecimal bedLength,
                                    @RequestParam(name = "bed", required = false) String bed,
-                                   @RequestParam(name = "cabin", required = false) String cabin) throws BusinessException {
+                                   @RequestParam(name = "cabin", required = false) String cabin,
+                                   @RequestParam(name = "isFrameDamaged", required = false, defaultValue = "false") boolean isFrameDamaged) throws BusinessException {
         Car car = new Car();
         car.setVin(vin);
         car.setSellerId(sellerId);
@@ -78,9 +81,8 @@ public class CarController {
 
         Car returnedCar = carService.saveCar(car);
 
-        // TODO: when returnedCar is determined as DepreciatedCar, you need to create DepreciatedCar and save them in repo
-
-        if (StringUtils.equals(returnedCar.getBodyType(), "pickup_truck")) { // is a pickup truck
+        // determine if the car to be saved is a pickup truck
+        if (StringUtils.equals(returnedCar.getBodyType(), PICKUP_TRUCK_IN_CAR_SQL)) {
             PickupTruck truck = new PickupTruck(); // create a pickup truck object
             truck.setId(returnedCar.getId());
             truck.setBedLength(bedLength);
@@ -92,6 +94,24 @@ public class CarController {
             PickupTruckVO pickupTruckVO = convertPickupTruckVOFromEntity(returnedCar, returnedTruck);
             return CommonReturnType.create(pickupTruckVO);
         }
+
+        // determine if the car to be saved is a depreciated car
+        if (Boolean.TRUE.equals(returnedCar.getDepreciated())) {
+            DepreciatedCar depreciatedCar = new DepreciatedCar();
+            depreciatedCar.setId(returnedCar.getId());
+
+            // todo: get user inputs from parameters
+            depreciatedCar.setFrameDamaged(isFrameDamaged);
+            depreciatedCar.setHasAccidents(true);
+            depreciatedCar.setSalvaged(true);
+            depreciatedCar.setCab(true);
+            depreciatedCar.setTheftTitle(true);
+
+            DepreciatedCar returnedDepreciatedCar = depreciatedCarService.saveDepreciatedCar(depreciatedCar);
+            DepreciatedCarVO depreciatedCarVO = convertDepreciatedCarVOFromEntity(car, returnedDepreciatedCar);
+            return CommonReturnType.create(depreciatedCarVO);
+        }
+
         // wrap Car to CarVO
         CarVO carVO = convertCarVOFromEntity(returnedCar);
 
@@ -108,9 +128,10 @@ public class CarController {
             // it is depreciated, so remove it from depreciatedRepo
             depreciatedCarService.removeDepreciatedCar(id);
         }
-
-        // TODO: first determine if the id corresponds a PickupTruck. If it is, remove it from PickupTruck repo
-
+        // it is depreciated, so remove it from pickupRepo
+        if (StringUtils.equals(returnedCar.getBodyType(), PICKUP_TRUCK_IN_CAR_SQL)) {
+            pickupTruckService.removePickupTruck(id);
+        }
         return CommonReturnType.create(null);
     }
 
@@ -127,7 +148,10 @@ public class CarController {
                     "Car does not exist");
         }
 
-        // TODO: check if car is determined as both depreciated and pickup truck; if it is, get it and return vo
+        if (Boolean.TRUE.equals(car.getDepreciated())
+                && StringUtils.equals(car.getBodyType(), PICKUP_TRUCK_IN_CAR_SQL)) {
+            // todo: ...
+        }
 
         // check if car is determined as depreciated
         if (Boolean.TRUE.equals(car.getDepreciated())) {

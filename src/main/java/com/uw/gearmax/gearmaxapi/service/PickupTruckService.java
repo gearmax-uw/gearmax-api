@@ -11,5 +11,5 @@ public interface PickupTruckService { //save objects into back_end
 
     PickupTruck removePickupTruck(Long id) throws BusinessException;
 
-    Optional<PickupTruck> getPickupTruckById(long id); //前端调API处断后端function操作数据库在返回数值给前端
+    Optional<PickupTruck> getPickupTruckById(Long id);
 }
