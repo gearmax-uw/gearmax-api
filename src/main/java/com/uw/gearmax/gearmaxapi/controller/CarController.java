@@ -151,9 +151,9 @@ public class CarController {
             if (optionalCar.isPresent()) {
                 car = optionalCar.get();
                 // save car to redis
-                redisTemplate.opsForValue().set("car_"+id, car);
+                redisTemplate.opsForValue().set("car_" + id, car);
                 // the key/value will be expired after 10 minutes
-                redisTemplate.expire("car_"+id, 10, TimeUnit.MINUTES);
+                redisTemplate.expire("car_" + id, 10, TimeUnit.MINUTES);
             } else {
                 throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
                         "Car does not exist");
@@ -189,9 +189,7 @@ public class CarController {
      * - model_name
      * - year (range, e.g., 2010-2022)
      * - mileage (less than)
-     * - options (not implemented yet)
-     * - exterior_color (has problem now)
-     * - interior_color (has problem now)
+     * - listing_color
      * - maximum_seating
      * - transmission_display (called 'transmission' to users)
      * ...
@@ -206,10 +204,12 @@ public class CarController {
                                             @RequestParam(name = "city", required = false) String city,
                                             @RequestParam(name = "makeName", required = false) String makeName,
                                             @RequestParam(name = "modelName", required = false) String modelName,
+                                            @RequestParam(name = "listingColor", required = false) String listingColor,
                                             @RequestParam(name = "year", required = false) String yearRange,
                                             @RequestParam(name = "mileage", required = false, defaultValue = "-1") int mileage,
                                             @RequestParam(name = "maximumSeating", required = false, defaultValue = "-1") int maximumSeating,
                                             @RequestParam(name = "transmissionDisplay", required = false) String transmissionDisplay,
+                                            @RequestParam(name = "features", required = false) String options,
                                             @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
                                             @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize,
                                             @RequestParam(name = "sort", required = false, defaultValue = "") String sortField,
@@ -223,10 +223,10 @@ public class CarController {
             }
         }
 
-        Specification<Car> spec = getCarSpec(priceRange, bodyType, city, makeName, modelName, yearRange, mileage, maximumSeating, transmissionDisplay);
+        Specification<Car> spec = getCarSpec(priceRange, bodyType, city, makeName, modelName, listingColor, yearRange,
+                mileage, maximumSeating, transmissionDisplay);
 
-        // return page 0 with 10 records if pageIndex = 0 and pageSize = 10
-        Page<Car> page = carService.listCarsWithSpecification(spec, pageable);
+        Page<Car> page = carService.listCarsWithSpecificationAndPagination(spec, pageable);
 
         List<Car> cars = page.getContent();
         List<CarVO> carVOs = cars.stream().map(car -> {
@@ -282,7 +282,7 @@ public class CarController {
     }
 
     private Specification<Car> getCarSpec(String priceRange, String bodyType, String city, String makeName, String modelName,
-                                          String yearRange, int mileage, int maximumSeating, String transmissionDisplay) {
+                                          String listingColor, String yearRange, int mileage, int maximumSeating, String transmissionDisplay) {
         CarSpecificationBuilder builder = new CarSpecificationBuilder();
         if (StringUtils.isNotEmpty(priceRange)) {
             // the given parameter in url will be year = xxxx-yyyy, then the sql condition will be year >= xxxx and year <= yyyy
@@ -302,7 +302,10 @@ public class CarController {
             builder.with("makeName", SearchOperation.EQUALITY, makeName);
         }
         if (StringUtils.isNotEmpty(modelName)) {
-            builder.with("modelName", SearchOperation.EQUALITY, makeName);
+            builder.with("modelName", SearchOperation.EQUALITY, modelName);
+        }
+        if (StringUtils.isNotEmpty(listingColor)) {
+            builder.with("listingColor", SearchOperation.EQUALITY, listingColor);
         }
         if (StringUtils.isNotEmpty(yearRange)) {
             // the given parameter in url will be year = xxxx-yyyy, then the sql condition will be year >= xxxx and year <= yyyy

@@ -15,14 +15,14 @@ Before the reading week, GearMax web app is expected to have the following funct
 - The navigation bar on the main page can direct them to the search page.
 - Users can search posts of their interested used cars by filters, and the filters include:
   - price range ([]-[], e.g., 1000-2000)
-  - bodyType (SUV_Crossover, Sedan, Coupe, Hatchback, Pickup Truck, Wagon, Minivan, Van, Convertible)
-  - make name/brands (Chrysler, Dodge, Mercedes-Benz, Nissan, Honda, Kia, Ford, Lincoln, Audi, Jaguar, Volkswagen, RAM, Porsche, Toyota, INFINITI, GMC, Acura, Maserati,
-    FIAT, Volvo, Mitsubishi, Buick, Mercury, Scion, Saab, MINI, Ferrari, Genesis, Saturn, Bentley, Suzuki, Tesla, Fisker, Pontiac, Lamborghini, smart, Hummer)
+  - bodyType (suv-crossover, sedan, coupe, hatchback, pickup-truck, wagon, minivan, van, convertible)
+  - make name/brands (chrysler, dodge, mercedes-benz, nissan, honda, kia, ford, lincoln, audi, jaguar, volkswagen, ram, porsche, toyota, infiniti, gmc, acura, maserati,
+    flat, volvo, mitsubishi, buick, mercury, scion, saab, mini, ferrari, genesis, saturn, bentley, suzuki, tesla, fisker, pontiac, lamborghini, smart, hummer)
   - model name (About 541 models given, we may not use this to be the filter) 
   - city (About 80 cities)
   - year range ([]-[], e.g., 2010-2012)
   - mileage ([x], less than or equal to x)
-  - exterior color
+  - listing color/exterior color ()
   - maximum seating ([x], less than or equal to x)
   - transmission display (About 30 transmission display)
   - options/features (not yet implemented)
