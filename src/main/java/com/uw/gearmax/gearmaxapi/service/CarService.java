@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CarService {
@@ -18,6 +19,8 @@ public interface CarService {
 
     Page<Car> listCarsByBodyType(String bodyType, Pageable pageable);
 
-    Page<Car> listCarsWithSpecification(Specification<Car> spec, Pageable pageable);
+    List<Car> listCarsWithSpecification(Specification<Car> spec);
+
+    Page<Car> listCarsWithSpecificationAndPagination(Specification<Car> spec, Pageable pageable);
 
 }

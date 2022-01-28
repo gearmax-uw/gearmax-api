@@ -26,7 +26,6 @@ public class CarSpecification implements Specification<Car> {
                 return builder.greaterThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue().toString());
             case LESS_THAN:
                 return builder.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue().toString());
-
             case LIKE:
                 return builder.like(root.get(criteria.getKey()), criteria.getValue().toString());
             case NEGATION:

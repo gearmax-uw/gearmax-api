@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -61,7 +62,12 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    public Page<Car> listCarsWithSpecification(Specification spec, Pageable pageable) {
+    public List<Car> listCarsWithSpecification(Specification<Car> spec) {
+        return carRepository.findAll(spec);
+    }
+
+    @Override
+    public Page<Car> listCarsWithSpecificationAndPagination(Specification spec, Pageable pageable) {
         return carRepository.findAll(spec, pageable);
     }
 

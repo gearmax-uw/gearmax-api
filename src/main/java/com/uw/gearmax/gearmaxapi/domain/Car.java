@@ -47,6 +47,10 @@ public class Car implements Serializable {
     @NotEmpty(message = "Body type cannot be empty")
     private String bodyType = ""; // Convertible/Coupe/Hatchback/Minivan/Pickup_truck/Sedan/SUV/Van/Wagon
 
+    @Column(name = "listing_color")
+    @NotEmpty(message = "Exterior color cannot be empty")
+    private String listingColor = "";
+
     @Column(name = "exterior_color", nullable = false)
     private String exteriorColor = "";
 
@@ -156,6 +160,10 @@ public class Car implements Serializable {
 
     @Column(name = "country", nullable = false)
     private String country = "";
+
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+//    private List<CarOption> carOptions;
 
     public Long getId() {
         return id;
@@ -491,5 +499,13 @@ public class Car implements Serializable {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public String getListingColor() {
+        return listingColor;
+    }
+
+    public void setListingColor(String listingColor) {
+        this.listingColor = listingColor;
     }
 }
