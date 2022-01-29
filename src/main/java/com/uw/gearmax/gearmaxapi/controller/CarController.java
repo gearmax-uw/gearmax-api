@@ -2,6 +2,7 @@ package com.uw.gearmax.gearmaxapi.controller;
 
 import com.uw.gearmax.gearmaxapi.controller.viewobject.CarVO;
 import com.uw.gearmax.gearmaxapi.controller.viewobject.DepreciatedCarVO;
+import com.uw.gearmax.gearmaxapi.controller.viewobject.DepreciatedPickupTruckVO;
 import com.uw.gearmax.gearmaxapi.controller.viewobject.PickupTruckVO;
 import com.uw.gearmax.gearmaxapi.domain.Car;
 import com.uw.gearmax.gearmaxapi.domain.DepreciatedCar;
@@ -65,7 +66,11 @@ public class CarController {
                                    @RequestParam(name = "bedLength", required = false) BigDecimal bedLength,
                                    @RequestParam(name = "bed", required = false) String bed,
                                    @RequestParam(name = "cabin", required = false) String cabin,
-                                   @RequestParam(name = "isFrameDamaged", required = false, defaultValue = "false") boolean isFrameDamaged) throws BusinessException {
+                                   @RequestParam(name = "isFrameDamaged", required = false, defaultValue = "false") boolean isFrameDamaged,
+                                   @RequestParam(name = "hasAccidents", required = false, defaultValue = "false") boolean hasAccidents,
+                                   @RequestParam(name = "isSalvaged", required = false, defaultValue = "false") boolean isSalvaged,
+                                   @RequestParam(name = "isCab", required = false, defaultValue = "false") boolean isCab,
+                                   @RequestParam(name = "isTheftTitle", required = false, defaultValue = "false") boolean isTheftTitle) throws BusinessException {
         Car car = new Car();
         car.setVin(vin);
         car.setSellerId(sellerId);
@@ -102,10 +107,10 @@ public class CarController {
 
             // todo: get user inputs from parameters
             depreciatedCar.setFrameDamaged(isFrameDamaged);
-            depreciatedCar.setHasAccidents(true);
-            depreciatedCar.setSalvaged(true);
-            depreciatedCar.setCab(true);
-            depreciatedCar.setTheftTitle(true);
+            depreciatedCar.setHasAccidents(hasAccidents);
+            depreciatedCar.setSalvaged(isSalvaged);
+            depreciatedCar.setCab(isCab);
+            depreciatedCar.setTheftTitle(isTheftTitle);
 
             DepreciatedCar returnedDepreciatedCar = depreciatedCarService.saveDepreciatedCar(depreciatedCar);
             DepreciatedCarVO depreciatedCarVO = convertDepreciatedCarVOFromEntity(car, returnedDepreciatedCar);
@@ -151,6 +156,11 @@ public class CarController {
         if (Boolean.TRUE.equals(car.getDepreciated())
                 && StringUtils.equals(car.getBodyType(), PICKUP_TRUCK_IN_CAR_SQL)) {
             // todo: ...
+            DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
+            PickupTruck truck = pickupTruckService.getPickupTruckById(car.getId()).get();
+            DepreciatedPickupTruckVO depreciatedPickupTruckVO=convertDepreciatedPickupTruckVOFromEntity(car,depreciatedCar,truck);
+            return CommonReturnType.create(depreciatedPickupTruckVO);
+
         }
 
         // check if car is determined as depreciated
@@ -162,6 +172,13 @@ public class CarController {
         }
 
         // TODO: check if car is determined as a pickup truck; if it is, get it and return vo
+        if (StringUtils.equals(car.getBodyType(), PICKUP_TRUCK_IN_CAR_SQL)) {
+
+            PickupTruck truck = pickupTruckService.getPickupTruckById(car.getId()).get();
+            PickupTruckVO pickupTruckVO = convertPickupTruckVOFromEntity(car, truck);
+            return CommonReturnType.create(pickupTruckVO);
+        }
+
 
         // the car must be a normal car
         CarVO carVO = convertCarVOFromEntity(car);
@@ -261,7 +278,13 @@ public class CarController {
         BeanUtils.copyProperties(depreciatedCar, depreciatedCarVO);
         return depreciatedCarVO;
     }
-
+    private DepreciatedPickupTruckVO convertDepreciatedPickupTruckVOFromEntity(Car car, DepreciatedCar depreciatedCar,PickupTruck truck) {
+        DepreciatedPickupTruckVO depreciatedPickupTruckVO = new DepreciatedPickupTruckVO();
+        BeanUtils.copyProperties(car, depreciatedPickupTruckVO);
+        BeanUtils.copyProperties(depreciatedCar,depreciatedPickupTruckVO);
+        BeanUtils.copyProperties(truck, depreciatedPickupTruckVO);
+        return depreciatedPickupTruckVO;
+    }
     private PickupTruckVO convertPickupTruckVOFromEntity(Car car, PickupTruck truck) {
         PickupTruckVO pickupTruckVO = new PickupTruckVO();
         BeanUtils.copyProperties(car, pickupTruckVO);
