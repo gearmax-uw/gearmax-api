@@ -6,22 +6,17 @@ import com.uw.gearmax.gearmaxapi.controller.viewobject.PickupTruckVO;
 import com.uw.gearmax.gearmaxapi.domain.Car;
 import com.uw.gearmax.gearmaxapi.domain.DepreciatedCar;
 import com.uw.gearmax.gearmaxapi.domain.PickupTruck;
+import com.uw.gearmax.gearmaxapi.domain.es.EsCar;
 import com.uw.gearmax.gearmaxapi.error.BusinessException;
 import com.uw.gearmax.gearmaxapi.error.EmBusinessError;
-import com.uw.gearmax.gearmaxapi.query.CarSpecificationBuilder;
-import com.uw.gearmax.gearmaxapi.query.SearchOperation;
 import com.uw.gearmax.gearmaxapi.response.CommonReturnType;
 import com.uw.gearmax.gearmaxapi.service.CarService;
 import com.uw.gearmax.gearmaxapi.service.DepreciatedCarService;
+import com.uw.gearmax.gearmaxapi.service.EsCarService;
 import com.uw.gearmax.gearmaxapi.service.PickupTruckService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -37,24 +33,22 @@ import java.util.stream.Collectors;
 @RequestMapping("/car")
 public class CarController {
 
-    private static final String PRICE_FIELD_IN_CAR_SQL = "price";
-    private static final String PRICE_PARAM_IN_URL = "price";
-    private static final String YEAR_PARAM_IN_URL = "year";
     private static final String PICKUP_TRUCK_IN_CAR_SQL = "pickup-truck";
 
     @Autowired
     private CarService carService;
     @Autowired
+    private EsCarService esCarService;
+    @Autowired
     private PickupTruckService pickupTruckService;
     @Autowired
     private DepreciatedCarService depreciatedCarService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     // car/add?vin=abcd&&...&&country=USA&&bedHeight=1
     // car/add?vin=abcd&&...&&country=USA
     // car/add?vin=abcd&&...&&country=USA&&bedHeight=1&&isFrameDamaged=true
-    @Autowired
-    private RedisTemplate redisTemplate;
-
     @PostMapping("/add")
     @ResponseBody
     public CommonReturnType addCar(@RequestParam(name = "vin") String vin,
@@ -181,54 +175,12 @@ public class CarController {
     }
 
     /**
-     * Parameters that can be used to search:
-     * - price (range, e.g., 1000-2000)
-     * - body_type
-     * - city
-     * - make_name
-     * - model_name
-     * - year (range, e.g., 2010-2022)
-     * - mileage (less than)
-     * - listing_color
-     * - maximum_seating
-     * - transmission_display (called 'transmission' to users)
-     * ...
-     * transmission: A (Automatic), M (Manual), CVT, Dual Clutch (only for note, may not provide to users)
-     * <p>
-     * This method searches items by given parameters. Pagination and sorting are applied.
+     * Since too many @RequestParams, so we use one map which contains all the requested params
      */
     @GetMapping("/list")
     @ResponseBody
-    public CommonReturnType listCarsByOrder(@RequestParam(name = "price", required = false) String priceRange,
-                                            @RequestParam(name = "bodyType", required = false) String bodyType,
-                                            @RequestParam(name = "city", required = false) String city,
-                                            @RequestParam(name = "makeName", required = false) String makeName,
-                                            @RequestParam(name = "modelName", required = false) String modelName,
-                                            @RequestParam(name = "listingColor", required = false) String listingColor,
-                                            @RequestParam(name = "year", required = false) String yearRange,
-                                            @RequestParam(name = "mileage", required = false, defaultValue = "-1") int mileage,
-                                            @RequestParam(name = "maximumSeating", required = false, defaultValue = "-1") int maximumSeating,
-                                            @RequestParam(name = "transmissionDisplay", required = false) String transmissionDisplay,
-                                            @RequestParam(name = "features", required = false) String options,
-                                            @RequestParam(name = "pageIndex", required = false, defaultValue = "0") int pageIndex,
-                                            @RequestParam(name = "pageSize", required = false, defaultValue = "10") int pageSize,
-                                            @RequestParam(name = "sort", required = false, defaultValue = "") String sortField,
-                                            @RequestParam(name = "sortOrder", required = false, defaultValue = "asc") String sortOrder) {
-        Pageable pageable = PageRequest.of(pageIndex, pageSize);
-        if (isSortFieldAvailable(sortField)) {
-            if (StringUtils.equals(sortOrder, "asc")) {
-                pageable = PageRequest.of(pageIndex, pageSize, Sort.by(sortField).ascending());
-            } else if (StringUtils.equals(sortOrder, "desc")) {
-                pageable = PageRequest.of(pageIndex, pageSize, Sort.by(sortField).descending());
-            }
-        }
-
-        Specification<Car> spec = getCarSpec(priceRange, bodyType, city, makeName, modelName, listingColor, yearRange,
-                mileage, maximumSeating, transmissionDisplay);
-
-        Page<Car> page = carService.listCarsWithSpecificationAndPagination(spec, pageable);
-
-        List<Car> cars = page.getContent();
+    public CommonReturnType listCars(@RequestParam Map<String, String> queryMap) {
+        List<Car> cars = carService.listCarsWithDynamicQuery(queryMap);
         List<CarVO> carVOs = cars.stream().map(car -> {
             // check if car is depreciated
             if (Boolean.TRUE.equals(car.getDepreciated())) {
@@ -242,21 +194,11 @@ public class CarController {
         return CommonReturnType.create(carVOs);
     }
 
-    @GetMapping("/test")
+    @GetMapping("/eslist")
     @ResponseBody
-    public String test() {
-        return "Hello world";
-    }
-
-    @GetMapping("/test/depreciatedCar/{id}")
-    @ResponseBody
-    public CommonReturnType testGetDepreciatedCar(@PathVariable Long id) {
-        Optional<DepreciatedCar> optionalCar = depreciatedCarService.getDepreciatedCarById(id);
-        if (optionalCar.isPresent()) {
-            DepreciatedCar depreciatedCar = optionalCar.get();
-            return CommonReturnType.create(depreciatedCar);
-        }
-        return CommonReturnType.create(null);
+    public CommonReturnType eslistCars(@RequestParam Map<String, String> queryMap) {
+        List<EsCar> cars = esCarService.listCarsWithDynamicQuery(queryMap);
+        return CommonReturnType.create(cars);
     }
 
     private CarVO convertCarVOFromEntity(Car car) {
@@ -279,59 +221,5 @@ public class CarController {
         BeanUtils.copyProperties(car, pickupTruckVO);
         BeanUtils.copyProperties(truck, pickupTruckVO);
         return pickupTruckVO;
-    }
-
-    private Specification<Car> getCarSpec(String priceRange, String bodyType, String city, String makeName, String modelName,
-                                          String listingColor, String yearRange, int mileage, int maximumSeating, String transmissionDisplay) {
-        CarSpecificationBuilder builder = new CarSpecificationBuilder();
-        if (StringUtils.isNotEmpty(priceRange)) {
-            // the given parameter in url will be year = xxxx-yyyy, then the sql condition will be year >= xxxx and year <= yyyy
-            int minPrice = Integer.parseInt(priceRange.substring(0, priceRange.indexOf("-")));
-            int maxPrice = Integer.parseInt(priceRange.substring(priceRange.indexOf("-") + 1));
-            builder.with(PRICE_FIELD_IN_CAR_SQL, SearchOperation.GREATER_THAN, minPrice);
-            builder.with(PRICE_FIELD_IN_CAR_SQL, SearchOperation.LESS_THAN, maxPrice);
-        }
-        if (StringUtils.isNotEmpty(bodyType)) {
-            // if bodyType = "SUV", then the sql condition will be bodyType = "SUV"
-            builder.with("bodyType", SearchOperation.EQUALITY, bodyType);
-        }
-        if (StringUtils.isNotEmpty(city)) {
-            builder.with("city", SearchOperation.EQUALITY, city);
-        }
-        if (StringUtils.isNotEmpty(makeName)) {
-            builder.with("makeName", SearchOperation.EQUALITY, makeName);
-        }
-        if (StringUtils.isNotEmpty(modelName)) {
-            builder.with("modelName", SearchOperation.EQUALITY, modelName);
-        }
-        if (StringUtils.isNotEmpty(listingColor)) {
-            builder.with("listingColor", SearchOperation.EQUALITY, listingColor);
-        }
-        if (StringUtils.isNotEmpty(yearRange)) {
-            // the given parameter in url will be year = xxxx-yyyy, then the sql condition will be year >= xxxx and year <= yyyy
-            int minYear = Integer.parseInt(yearRange.substring(0, yearRange.indexOf("-")));
-            int maxYear = Integer.parseInt(yearRange.substring(yearRange.indexOf("-") + 1));
-            builder.with("year", SearchOperation.GREATER_THAN, minYear);
-            builder.with("year", SearchOperation.LESS_THAN, maxYear);
-        }
-        if (mileage >= 0) {
-            // if mileage = 10000, then the sql condition will be mileage <= 10000
-            builder.with("mileage", SearchOperation.LESS_THAN, mileage);
-        }
-        if (maximumSeating > 0) {
-            builder.with("maximumSeating", SearchOperation.EQUALITY, maximumSeating);
-        }
-        if (StringUtils.isNotEmpty(transmissionDisplay)) {
-            builder.with("transmissionDisplay", SearchOperation.EQUALITY, transmissionDisplay);
-        }
-        return builder.build();
-    }
-
-    /**
-     * The results can be sorted by price and year
-     */
-    private boolean isSortFieldAvailable(String sortField) {
-        return StringUtils.equals(sortField, PRICE_PARAM_IN_URL)
-                || StringUtils.equals(sortField, YEAR_PARAM_IN_URL);
     }
 }

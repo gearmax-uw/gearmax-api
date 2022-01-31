@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.validation.constraints.Digits;
 import java.math.BigDecimal;
 
-@Entity
+@Entity(name = "pickup_truck")
 public class PickupTruck {
     @Id
     private Long id;

@@ -1,17 +1,19 @@
 package com.uw.gearmax.gearmaxapi.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity(name = "car_option")
+@IdClass(CompositeKey.class)
 public class CarOption implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Id
     @Column(name = "option_id", nullable = false)
     private Long optionId;
 
+    @Id
     @Column(name = "car_id", nullable = false)
     private Long carId;
 
@@ -30,28 +32,10 @@ public class CarOption implements Serializable {
     public void setCarId(Long carId) {
         this.carId = carId;
     }
+}
 
-//    @ManyToOne
-//    @JoinColumn(name = "option_id", nullable = false)
-//    private Option option;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "car_id", nullable = false)
-//    private Car car;
-
-//    public Option getOption() {
-//        return option;
-//    }
-//
-//    public void setOption(Option option) {
-//        this.option = option;
-//    }
-//
-//    public Car getCar() {
-//        return car;
-//    }
-//
-//    public void setCar(Car car) {
-//        this.car = car;
-//    }
+@Embeddable
+class CompositeKey implements Serializable {
+    private Long optionId;
+    private Long carId;
 }
