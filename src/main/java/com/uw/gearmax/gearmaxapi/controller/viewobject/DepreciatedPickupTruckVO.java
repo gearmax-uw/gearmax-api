@@ -1,7 +1,9 @@
 package com.uw.gearmax.gearmaxapi.controller.viewobject;
 
+import java.math.BigDecimal;
+
 public class DepreciatedPickupTruckVO extends CarVO {
-    // todo: add attributes
+    
     private Boolean isFrameDamaged;
     private Boolean hasAccidents;
     private Boolean isSalvaged;
@@ -10,6 +12,7 @@ public class DepreciatedPickupTruckVO extends CarVO {
     private String bed;
     private BigDecimal bedLength;
     private String cabin;
+
     public Boolean getFrameDamaged() {
         return isFrameDamaged;
     }
@@ -49,7 +52,8 @@ public class DepreciatedPickupTruckVO extends CarVO {
     public void setTheftTitle(Boolean theftTitle) {
         isTheftTitle = theftTitle;
     }
-     public String getBed() {
+
+    public String getBed() {
         return bed;
     }
 

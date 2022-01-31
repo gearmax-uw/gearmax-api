@@ -15,6 +15,7 @@ import com.uw.gearmax.gearmaxapi.service.CarService;
 import com.uw.gearmax.gearmaxapi.service.DepreciatedCarService;
 import com.uw.gearmax.gearmaxapi.service.EsCarService;
 import com.uw.gearmax.gearmaxapi.service.PickupTruckService;
+import com.uw.gearmax.gearmaxapi.util.FieldVal;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/car")
 public class CarController {
 
-    private static final String PICKUP_TRUCK_IN_CAR_SQL = "pickup-truck";
-
+    private static final String CAR_PREFIX_IN_REDIS = "car_";
     @Autowired
     private CarService carService;
     @Autowired
@@ -84,40 +84,51 @@ public class CarController {
 
         Car returnedCar = carService.saveCar(car);
 
-        // determine if the car to be saved is a pickup truck
-        if (StringUtils.equals(returnedCar.getBodyType(), PICKUP_TRUCK_IN_CAR_SQL)) {
-            PickupTruck truck = new PickupTruck(); // create a pickup truck object
-            truck.setId(returnedCar.getId());
-            truck.setBedLength(bedLength);
-            truck.setBed(bed);
-            truck.setCabin(cabin);
+        // as user inputs the bed length, the car is a pickup truck (only pickup truck has the bed attributes)
+        boolean isPickupTruck = bedLength != null || StringUtils.isNotBlank(bed) || StringUtils.isNotBlank(cabin);
+        boolean isDepreciated = isFrameDamaged || hasAccidents || isSalvaged || isCab || isTheftTitle;
+        boolean isDepreciatedPickupTruck = isPickupTruck && isDepreciated;
 
-            // store pickup truck object to repo
-            PickupTruck returnedTruck = pickupTruckService.savePickupTruck(truck);
-            PickupTruckVO pickupTruckVO = convertPickupTruckVOFromEntity(returnedCar, returnedTruck);
-            return CommonReturnType.create(pickupTruckVO);
-        }
-
-        // determine if the car to be saved is a depreciated car
-        if (Boolean.TRUE.equals(returnedCar.getDepreciated())) {
-            DepreciatedCar depreciatedCar = new DepreciatedCar();
-            depreciatedCar.setId(returnedCar.getId());
-
-            // todo: get user inputs from parameters
-            depreciatedCar.setFrameDamaged(isFrameDamaged);
-            depreciatedCar.setHasAccidents(hasAccidents);
-            depreciatedCar.setSalvaged(isSalvaged);
-            depreciatedCar.setCab(isCab);
-            depreciatedCar.setTheftTitle(isTheftTitle);
-
-            DepreciatedCar returnedDepreciatedCar = depreciatedCarService.saveDepreciatedCar(depreciatedCar);
+        // is pickup truck or depreciated
+        if (isPickupTruck || isDepreciated) {
+            PickupTruck returnedTruck = null;
+            DepreciatedCar returnedDepreciatedCar = null;
+            if (isPickupTruck) {
+                PickupTruck truck = new PickupTruck();
+                truck.setId(returnedCar.getId());
+                truck.setBedLength(bedLength);
+                truck.setBed(bed);
+                truck.setCabin(cabin);
+                // save the pickup truck to repo
+                returnedTruck = pickupTruckService.savePickupTruck(truck);
+            }
+            if (isDepreciated) {
+                DepreciatedCar depreciatedCar = new DepreciatedCar();
+                depreciatedCar.setId(returnedCar.getId());
+                depreciatedCar.setFrameDamaged(isFrameDamaged);
+                depreciatedCar.setHasAccidents(hasAccidents);
+                depreciatedCar.setSalvaged(isSalvaged);
+                depreciatedCar.setCab(isCab);
+                depreciatedCar.setTheftTitle(isTheftTitle);
+                // save the depreciated car to repo
+                returnedDepreciatedCar = depreciatedCarService.saveDepreciatedCar(depreciatedCar);
+            }
+            // the car is a depreciated pickup truck
+            if (isPickupTruck && isDepreciated) {
+                DepreciatedPickupTruckVO depreciatedPickupTruckVO = convertDepreciatedPickupTruckVOFromEntity(car, returnedDepreciatedCar, returnedTruck);
+                return CommonReturnType.create(depreciatedPickupTruckVO);
+            }
+            if (isPickupTruck) {
+                PickupTruckVO pickupTruckVO = convertPickupTruckVOFromEntity(car, returnedTruck);
+                return CommonReturnType.create(pickupTruckVO);
+            }
+            // here the car must be depreciated
             DepreciatedCarVO depreciatedCarVO = convertDepreciatedCarVOFromEntity(car, returnedDepreciatedCar);
             return CommonReturnType.create(depreciatedCarVO);
         }
 
-        // wrap Car to CarVO
+        // here the car must be a normal car, so wrap Car to CarVO
         CarVO carVO = convertCarVOFromEntity(returnedCar);
-
         return CommonReturnType.create(carVO);
     }
 
@@ -132,7 +143,7 @@ public class CarController {
             depreciatedCarService.removeDepreciatedCar(id);
         }
         // it is depreciated, so remove it from pickupRepo
-        if (StringUtils.equals(returnedCar.getBodyType(), PICKUP_TRUCK_IN_CAR_SQL)) {
+        if (StringUtils.equals(returnedCar.getBodyType(), FieldVal.PICKUP_TRUCK.val())) {
             pickupTruckService.removePickupTruck(id);
         }
         return CommonReturnType.create(null);
@@ -143,33 +154,32 @@ public class CarController {
     @ResponseBody
     public CommonReturnType getCar(@PathVariable(value = "id") Long id) throws BusinessException {
         // try to get the car object from redis
-        Car car = (Car) redisTemplate.opsForValue().get("car_" + id);
+        Car car = (Car) redisTemplate.opsForValue().get(CAR_PREFIX_IN_REDIS + id);
         if (car == null) { // if the car is not found from redis
             // get car from database
             Optional<Car> optionalCar = carService.getCarById(id);
             if (optionalCar.isPresent()) {
                 car = optionalCar.get();
                 // save car to redis
-                redisTemplate.opsForValue().set("car_" + id, car);
+                redisTemplate.opsForValue().set(CAR_PREFIX_IN_REDIS + id, car);
                 // the key/value will be expired after 10 minutes
-                redisTemplate.expire("car_" + id, 10, TimeUnit.MINUTES);
+                redisTemplate.expire(CAR_PREFIX_IN_REDIS + id, 10, TimeUnit.MINUTES);
             } else {
                 throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
                         "Car does not exist");
             }
         }
 
+        // check if the car is both depreciated and a pickup truck
         if (Boolean.TRUE.equals(car.getDepreciated())
-                && StringUtils.equals(car.getBodyType(), PICKUP_TRUCK_IN_CAR_SQL)) {
-            // todo: ...
+                && StringUtils.equals(car.getBodyType(), FieldVal.PICKUP_TRUCK.val())) {
             DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
             PickupTruck truck = pickupTruckService.getPickupTruckById(car.getId()).get();
-            DepreciatedPickupTruckVO depreciatedPickupTruckVO=convertDepreciatedPickupTruckVOFromEntity(car,depreciatedCar,truck);
+            DepreciatedPickupTruckVO depreciatedPickupTruckVO = convertDepreciatedPickupTruckVOFromEntity(car, depreciatedCar, truck);
             return CommonReturnType.create(depreciatedPickupTruckVO);
-
         }
 
-        // check if car is determined as depreciated
+        // check if the car is determined as depreciated
         if (Boolean.TRUE.equals(car.getDepreciated())) {
             // car is determined as depreciated
             DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
@@ -177,14 +187,12 @@ public class CarController {
             return CommonReturnType.create(depreciatedCarVO);
         }
 
-        // TODO: check if car is determined as a pickup truck; if it is, get it and return vo
-        if (StringUtils.equals(car.getBodyType(), PICKUP_TRUCK_IN_CAR_SQL)) {
-
+        // check if the car is a pickup truck
+        if (StringUtils.equals(car.getBodyType(), FieldVal.PICKUP_TRUCK.val())) {
             PickupTruck truck = pickupTruckService.getPickupTruckById(car.getId()).get();
             PickupTruckVO pickupTruckVO = convertPickupTruckVOFromEntity(car, truck);
             return CommonReturnType.create(pickupTruckVO);
         }
-
 
         // the car must be a normal car
         CarVO carVO = convertCarVOFromEntity(car);
@@ -232,13 +240,15 @@ public class CarController {
         BeanUtils.copyProperties(depreciatedCar, depreciatedCarVO);
         return depreciatedCarVO;
     }
-    private DepreciatedPickupTruckVO convertDepreciatedPickupTruckVOFromEntity(Car car, DepreciatedCar depreciatedCar,PickupTruck truck) {
+
+    private DepreciatedPickupTruckVO convertDepreciatedPickupTruckVOFromEntity(Car car, DepreciatedCar depreciatedCar, PickupTruck truck) {
         DepreciatedPickupTruckVO depreciatedPickupTruckVO = new DepreciatedPickupTruckVO();
         BeanUtils.copyProperties(car, depreciatedPickupTruckVO);
-        BeanUtils.copyProperties(depreciatedCar,depreciatedPickupTruckVO);
+        BeanUtils.copyProperties(depreciatedCar, depreciatedPickupTruckVO);
         BeanUtils.copyProperties(truck, depreciatedPickupTruckVO);
         return depreciatedPickupTruckVO;
     }
+
     private PickupTruckVO convertPickupTruckVOFromEntity(Car car, PickupTruck truck) {
         PickupTruckVO pickupTruckVO = new PickupTruckVO();
         BeanUtils.copyProperties(car, pickupTruckVO);
