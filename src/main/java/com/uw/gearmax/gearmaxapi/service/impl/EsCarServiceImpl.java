@@ -1,7 +1,6 @@
 package com.uw.gearmax.gearmaxapi.service.impl;
 
 import com.uw.gearmax.gearmaxapi.domain.es.EsCar;
-import com.uw.gearmax.gearmaxapi.repository.es.EsCarRepository;
 import com.uw.gearmax.gearmaxapi.service.EsCarService;
 import com.uw.gearmax.gearmaxapi.util.CommonSymbol;
 import com.uw.gearmax.gearmaxapi.util.CommonUtility;
@@ -12,7 +11,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
@@ -27,15 +26,11 @@ import java.util.stream.Collectors;
 public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService {
 
     @Autowired
-    private EsCarRepository esCarRepository;
-
-    @Autowired
-    private ElasticsearchRestTemplate elasticsearchRestTemplate;
-
+    private ElasticsearchOperations elasticsearchOperations;
 
     @Override
     public List<EsCar> listCarsWithQuery(Query searchQuery) {
-        SearchHits<EsCar> esCarSearchHits = elasticsearchRestTemplate.search(searchQuery, EsCar.class);
+        SearchHits<EsCar> esCarSearchHits = elasticsearchOperations.search(searchQuery, EsCar.class);
         List<EsCar> esCars = esCarSearchHits.stream().map(hit -> hit.getContent()).collect(Collectors.toList());
         return esCars;
     }
