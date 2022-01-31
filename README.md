@@ -18,11 +18,9 @@ Before the reading week, GearMax web app is expected to have the following funct
   - bodyType (suv-crossover, sedan, coupe, hatchback, pickup-truck, wagon, minivan, van, convertible)
   - make name/brands (chrysler, dodge, mercedes-benz, nissan, honda, kia, ford, lincoln, audi, jaguar, volkswagen, ram, porsche, toyota, infiniti, gmc, acura, maserati,
     flat, volvo, mitsubishi, buick, mercury, scion, saab, mini, ferrari, genesis, saturn, bentley, suzuki, tesla, fisker, pontiac, lamborghini, smart, hummer)
-  - model name (About 541 models given, we may not use this to be the filter) 
-  - city (About 80 cities)
   - year range ([]-[], e.g., 2010-2012)
   - mileage ([x], less than or equal to x)
-  - listing color/exterior color ()
+  - listing color/exterior color
   - maximum seating ([x], less than or equal to x)
   - transmission display (About 30 transmission display)
   - options/features (not yet implemented)
@@ -51,6 +49,7 @@ The technologies that the project uses:
 - React (gearmax-react-app)
 - Spring JPA
 - MySQL
+- Elasticsearch
 - Redis
 - Docker
 
@@ -83,6 +82,14 @@ Use car-related classes as the example:
          +- error
          |
          +- validator
+         |
+         +- config
+         |
+         +- query
+         |
+         +- serializer
+         |
+         +- util
 
 The *controller* package includes classes annotated as *@Controller*, which handles HTTP requests. Within each request 
 function, you can invoke *service* functions but do not directly invoke *repository* functions.
@@ -110,15 +117,18 @@ objects rather than entity objects.
 
 ### Environment Requirements
 To run this project locally, your environments must meet the following criteria:
-- Docker (RECOMMENDED!If u have Docker installed, everything will be super easy!)
 
 If you have Docker installed, please go to [docker-compose running guide](#how-to-run-this-app-in-docker-environment-recommended) to run this app.
+
+- MySQL Server 8.0+
+- Elasticsearch 7.6.2
 
 or
 
 - Installed JDK (at least 11) and Maven
-- MySQL Server 8.0+
 - Redis installed
+- MySQL Server 8.0+
+- Elasticsearch 7.6.2
 
 If you haven't Docker installed but have the above three items installed, please go to the [running guide](#how-to-run-this-app-in-either-dev-or-prod-environment) 
 to run this app.
@@ -130,13 +140,11 @@ Make sure you have Docker installed in your machine. Then go to *gearmax-api/* t
 detached mode, run `docker-compose stop` to exit these containerized running apps. 
 
 **Note:** `docker-compose up` will run the file with default name *docker-compose.yml*. This file will create two containers which 
-provides spring boot and redis services, and you still can use your local/remote MySQL server only if you configure it correctly. If 
-you prefer to use containers to provide MySQL service, you can run `docker-compose -f docker-compose-with-sql.yml up` which will start 
-up three containers (spring boot + redis + mysql) configured by *docker-compose-with-sql.yml* (haven't tested yet, hahaha...).
+provide spring boot and redis services, and you still can use your local/remote MySQL server and Elasticsearch server only if you configure it correctly.
 
 ### How to run this app in either dev or prod environment?
 
-**WARNING: If you don't have MySQL or Redis installed, or you do not configure them correctly in the property file, the app will not build or run successfully!**
+**WARNING: If you don't have MySQL/Redis/Elasticsearch installed, or you do not configure them correctly in the property file, the app will not build or run successfully!**
 
 If you would like to run this app in dev (development) environment, go to *gearmax-api/src/main/resources/application.properties* 
 and specify `spring.profiles.active=dev`. This specification will deploy the configurations in *application-dev.properties* when you start your app.

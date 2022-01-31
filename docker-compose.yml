@@ -7,14 +7,14 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-    - "8080:8080"
+      - "8080:8080"
     depends_on:
       - redis
     restart: always
   # redis service
   redis:
-    container_name: gearmax_redis
+    container_name: gearmax-redis
     image: redis:alpine
     hostname: redis
     ports:
-    - "6379:6379"
+      - "6379:6379"
