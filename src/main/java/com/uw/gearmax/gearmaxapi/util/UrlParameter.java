@@ -15,7 +15,8 @@ public enum UrlParameter {
     LISTING_COLOR("listingColor"),
     MILEAGE("mileage"),
     MAXIMUM_SEATING("maximumSeating"),
-    TRANSMISSION_DISPLAY("transmissionDisplay");
+    TRANSMISSION_DISPLAY("transmissionDisplay"),
+    FEATURES("features");
 
     private final String s;
 

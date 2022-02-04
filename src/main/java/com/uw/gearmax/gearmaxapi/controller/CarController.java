@@ -87,7 +87,6 @@ public class CarController {
         // as user inputs the bed length, the car is a pickup truck (only pickup truck has the bed attributes)
         boolean isPickupTruck = bedLength != null || StringUtils.isNotBlank(bed) || StringUtils.isNotBlank(cabin);
         boolean isDepreciated = isFrameDamaged || hasAccidents || isSalvaged || isCab || isTheftTitle;
-        boolean isDepreciatedPickupTruck = isPickupTruck && isDepreciated;
 
         // is pickup truck or depreciated
         if (isPickupTruck || isDepreciated) {
@@ -223,6 +222,7 @@ public class CarController {
     @ResponseBody
     public CommonReturnType eslistCars(@RequestParam Map<String, String> queryMap) {
         List<EsCar> cars = esCarService.listCarsWithDynamicQuery(queryMap);
+        // todo: wrap to vo class
         return CommonReturnType.create(cars);
     }
 

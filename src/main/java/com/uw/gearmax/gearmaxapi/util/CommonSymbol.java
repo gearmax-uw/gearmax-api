@@ -2,7 +2,9 @@ package com.uw.gearmax.gearmaxapi.util;
 
 public enum CommonSymbol {
 
-    DASH("-");
+    DASH("-"),
+    PLUS("\\+"),
+    SPACE("\\s+");
 
     private final String s;
 

@@ -12,7 +12,8 @@ public enum EsSearchKey {
     YEAR("year"),
     MILEAGE("mileage"),
     MAXIMUM_SEATING("maximum_seating"),
-    TRANSMISSION_DISPLAY("transmission_display");
+    TRANSMISSION_DISPLAY("transmission_display"),
+    MAJOR_OPTIONS("major_options");
 
     private final String s;
 

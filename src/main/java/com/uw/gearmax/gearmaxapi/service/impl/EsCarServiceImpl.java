@@ -63,6 +63,7 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
             maximumSeating = Integer.parseInt(queryMap.get(UrlParameter.MAXIMUM_SEATING.val()));
         }
         String transmissionDisplay = queryMap.getOrDefault(UrlParameter.TRANSMISSION_DISPLAY.val(), "");
+        String features = queryMap.getOrDefault(UrlParameter.FEATURES.val(), "");
 
         if (StringUtils.isNotEmpty(priceRange)) {
             // the given parameter in url will be year = xxxx-yyyy, then the sql condition will be year >= xxxx and year <= yyyy
@@ -107,6 +108,14 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
         if (StringUtils.isNotEmpty(transmissionDisplay)) {
             String convertedTransmissionDisplay = CommonUtility.convertUrlParamValue(transmissionDisplay);
             boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.TRANSMISSION_DISPLAY.val(), convertedTransmissionDisplay));
+        }
+
+        if (StringUtils.isNotEmpty(features)) {
+            String[] featureArr = features.split(CommonSymbol.SPACE.val());
+            for (String feature : featureArr) {
+                String convertedFeature = CommonUtility.convertUrlParamValue(feature);
+                boolQueryBuilder.filter(QueryBuilders.termQuery(EsSearchKey.MAJOR_OPTIONS.val(), convertedFeature));
+            }
         }
         return boolQueryBuilder;
     }

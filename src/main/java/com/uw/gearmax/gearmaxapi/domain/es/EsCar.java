@@ -55,7 +55,7 @@ public class EsCar implements Serializable {
     private LocalDate listedDate;
     @Field(name = "main_picture_url", type = FieldType.Keyword, index = false)
     private String mainPictureUrl = "";
-    @Field(name = "major_options", type = FieldType.Text)
+    @Field(name = "major_options", type = FieldType.Keyword)
     private List<String> majorOptions = new ArrayList<>();
     @Field(name = "make_name", type = FieldType.Keyword, index = false)
     private String makeName = "";

@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+  # spring boot service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - mysql
+      - elasticsearch
+    restart: always
+  # redis service
+  redis:
+    container_name: gearmax-redis
+    image: redis:alpine
+    hostname: redis
+    ports:
+      - "6379:6379"
+    restart: always
+  # database service (mysql)
+  db:
+    container_name: gearmax-mysql
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: UsedCar
+      MYSQL_USER: gearmax
+      MYSQL_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: 123456
+    ports:
+      - "3307:3306"
+    restart: always
+  # elasticsearch service
+  elasticsearch:
+    container_name: gearmax-es
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+    environment:
+      - node.name=gearmax-es
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+
