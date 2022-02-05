@@ -6,11 +6,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: gearmax-api
+    image: y82cheng/gearmax-api:latest
     ports:
       - "8080:8080"
     depends_on:
       - redis
-    restart: always
   # redis service
   redis:
     container_name: gearmax-redis
