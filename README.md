@@ -23,7 +23,7 @@ Before the reading week, GearMax web app is expected to have the following funct
   - listing color/exterior color
   - maximum seating ([x], less than or equal to x)
   - transmission display (About 30 transmission display)
-  - options/features (not yet implemented)
+  - options/features (xxx+yyy+zzz, for example, bluetooth+backup-camera)
 - When users input a wrong url, our website will always direct them to the search page.
 - Users can view the detailed information of a used car when they click a specific post.
 
@@ -31,6 +31,11 @@ After the reading week, GearMax app is expected to have the following functional
 - Users can sign in/log in to GearMax.
 - Signed users can post their used cars.
 - GearMax can predict the future price of used cars by users' given information.
+
+### Performance Requirements
+
+- When users request a query/search, the reponse/search results must be returned within 1s.
+- We assume that the users will not concurrently send requests, so we do not make our project a distributed system.
 
 ### The 12-Factor Methodology
 
@@ -118,33 +123,13 @@ objects rather than entity objects.
 ### Environment Requirements
 To run this project locally, your environments must meet the following criteria:
 
-If you have Docker installed, please go to [docker-compose running guide](#how-to-run-this-app-in-docker-environment-recommended) to run this app.
-
-- MySQL Server 8.0+
-- Elasticsearch 7.6.2
-
-or
-
 - Installed JDK (at least 11) and Maven
 - Redis installed
 - MySQL Server 8.0+
 - Elasticsearch 7.6.2
+- Docker && Docker Compose
 
-If you haven't Docker installed but have the above three items installed, please go to the [running guide](#how-to-run-this-app-in-either-dev-or-prod-environment) 
-to run this app.
-
-### How to run this app in Docker environment? [RECOMMENDED]
-
-Make sure you have Docker installed in your machine. Then go to *gearmax-api/* to run `docker-compose up` or 
-`docker-compose up -d` in detached mode to create containers which containerize our apps. If you run this in 
-detached mode, run `docker-compose stop` to exit these containerized running apps. 
-
-**Note:** `docker-compose up` will run the file with default name *docker-compose.yml*. This file will create two containers which 
-provide spring boot and redis services, and you still can use your local/remote MySQL server and Elasticsearch server only if you configure it correctly.
-
-### How to run this app in either dev or prod environment?
-
-**WARNING: If you don't have MySQL/Redis/Elasticsearch installed, or you do not configure them correctly in the property file, the app will not build or run successfully!**
+### How to configure this app in either dev or prod environment?
 
 If you would like to run this app in dev (development) environment, go to *gearmax-api/src/main/resources/application.properties* 
 and specify `spring.profiles.active=dev`. This specification will deploy the configurations in *application-dev.properties* when you start your app.
@@ -152,20 +137,11 @@ and specify `spring.profiles.active=dev`. This specification will deploy the con
 If you would like to run this app in prod (production) environment, find *application.properties* and specify
 `spring.profiles.active=prod`. This specification will deploy the configurations in *application-prod.properties* when you start your app.
 
-Then go to *gearmax-api* and run `mvn clean install`.
-
-#### How to configure this app in dev environment, which requires using your own MySQL server?
-
-1. Set up a database named *demo* with MySQL.
-2. Find the file *gearmax-api/src/main/resources/application-dev.properties* and change the configuration:
-    - spring.datasource.username=[your MySQL username]
-    - spring.datasource.password=[your MySQL password]
-3. Run *main()* function in *GearmaxApiApplication* class.
-
-#### How to configure this app in prod environment, which requires using the production MySQL server?
+#### How to configure this app in prod environment?
 
 If you would like to change the production environment settings/configurations, find *gearmax-api/src/main/resources/application-prod.properties* 
-and update the settings.
+and update the settings. Make sure the configurations to connect to Elasticsearch/MySQL/Redis match your case; otherwise, the app may not work properly. 
+The same requirements apply to dev environment.
 
 To avoid leaking sensitive information, we use [Jasypt](https://github.com/ulisesbocchio/jasypt-spring-boot) to do the password encryption. 
 Jasypt allows you to only specify the encrypted password in the *application.properties* file. For example, if you would like to 
@@ -173,15 +149,23 @@ encrypt a value *'InfoToBeEncrypted'* using the salt *'test'*, you can run comma
 You will see the output encrypted value *ENC(/nJHoNctIHpmuaGcmqqUIt5EPw/3/CWzz7RVZrOdhof3NnyvMezwO84n+WdESXLu)*, so you can 
 replace the old original password with the encrypted value. Also, do not forget to specify your salt in the property file as well: `jasypt.encryptor.password=test`.
 
+### How to run this app?
+
+- Go to *gearmax-api* and run `mvn clean install`, and you will find the newly generated `targets/gearmax-api.jar`.
+- Put the jar file to some location, and create a bash shell script, let's say `deploy.sh`.
+- Put the command to the script: `nohup java -Xms400m -Xmx400m -XX:NewSize=200m -XX:MaxNewSize=200m -jar gearmax-api.jar`.
+- Run `chmod 777 deploy.sh` to give the execution permission.
+- Run `./deploy.sh`, you will see the api project is starting and running (if your configuration in property file is correct).
+
 ### How to send requests after the app starts?
 
 You can directly send http requests or use Postman. Either way is fine.
 
 **Try searching a car by given parameters**:
 
-`http://localhost:8080/car/list?bodyType=SUV_Crossover&year=2010-2019`
+`http://[host]:8080/car/list?bodyType=SUV_Crossover&year=2010-2019`
 
-`http://localhost:8080/car/list?bodyType=SUV_Crossover&year=2010-2019&mileage=50000`
+`http://[host]:8080/car/list?bodyType=SUV_Crossover&year=2010-2019&mileage=50000`
 
 
 **Only add/delete record to your local MySQL databases. Don't perform these operations to the production server.**
