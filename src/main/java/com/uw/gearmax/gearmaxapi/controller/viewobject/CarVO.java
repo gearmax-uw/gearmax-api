@@ -6,7 +6,6 @@ public class CarVO {
 
     private Long id;
     private String vin;
-    private Integer sellerId;
     private Integer price;
     private Integer year;
     private String bodyType;
@@ -35,14 +34,6 @@ public class CarVO {
 
     public void setVin(String vin) {
         this.vin = vin;
-    }
-
-    public Integer getSellerId() {
-        return sellerId;
-    }
-
-    public void setSellerId(Integer sellerId) {
-        this.sellerId = sellerId;
     }
 
     public Integer getPrice() {

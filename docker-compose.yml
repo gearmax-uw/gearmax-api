@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  # spring boot service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gearmax-api
+    image: y82cheng/gearmax-api:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+  # redis service
+  redis:
+    container_name: gearmax-redis
+    image: redis:alpine
+    hostname: redis
+    ports:
+      - "6379:6379"

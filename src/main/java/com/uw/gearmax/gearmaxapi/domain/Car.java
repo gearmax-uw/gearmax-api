@@ -2,11 +2,14 @@ package com.uw.gearmax.gearmaxapi.domain;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-public class Car {
+public class Car implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,13 +39,17 @@ public class Car {
     @Max(value = 2022, message = "Year must be between 1884-2022")
     private Integer year;
 
-    @Column(name = "mileage", nullable = false)
+    @Column(name = "mileage")
     @NotNull(message = "Mileage cannot be empty")
     private Integer mileage;
 
     @Column(name = "body_type", nullable = false)
     @NotEmpty(message = "Body type cannot be empty")
     private String bodyType = ""; // Convertible/Coupe/Hatchback/Minivan/Pickup_truck/Sedan/SUV/Van/Wagon
+
+    @Column(name = "listing_color")
+    @NotEmpty(message = "Exterior color cannot be empty")
+    private String listingColor = "";
 
     @Column(name = "exterior_color", nullable = false)
     private String exteriorColor = "";
@@ -53,20 +60,20 @@ public class Car {
     @Column(name = "engine_type", nullable = false)
     private String engineType = "";
 
-    @Column(name = "engine_displacement", nullable = false)
-    private Integer engineDisplacement = 0;
+    @Column(name = "engine_displacement")
+    private Integer engineDisplacement;
 
-    @Column(name = "pound_foot", nullable = false)
-    private Integer poundFoot = 0;
+    @Column(name = "pound_foot")
+    private Integer poundFoot;
 
-    @Column(name = "torque_rpm", nullable = false)
-    private Integer torqueRpm = 0;
+    @Column(name = "torque_rpm")
+    private Integer torqueRpm;
 
-    @Column(name = "horsepower", nullable = false)
-    private Integer horsePower = 0;
+    @Column(name = "horsepower")
+    private Integer horsePower;
 
-    @Column(name = "power_rpm", nullable = false)
-    private Integer powerRpm = 0;
+    @Column(name = "power_rpm")
+    private Integer powerRpm;
 
     @Column(name = "transmission", nullable = false)
     private String transmission = "";
@@ -80,55 +87,55 @@ public class Car {
     @Column(name = "wheel_system_display", nullable = false)
     private String wheelSystemDisplay = "";
 
-    @Column(name = "wheelbase", nullable = false)
+    @Column(name = "wheelbase")
     @Digits(integer = 3, fraction = 1)
-    private BigDecimal wheelbase = BigDecimal.valueOf(0.0);
+    private BigDecimal wheelbase;
 
-    @Column(name = "city_fuel_economy", nullable = false)
-    private Integer cityFuelEconomy = 0;
+    @Column(name = "city_fuel_economy")
+    private Integer cityFuelEconomy;
 
-    @Column(name = "highway_fuel_economy", nullable = false)
-    private Integer highwayFuelEconomy = 0;
+    @Column(name = "highway_fuel_economy")
+    private Integer highwayFuelEconomy;
 
-    @Column(name = "fuel_tank_volume", nullable = false)
+    @Column(name = "fuel_tank_volume")
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal fuelTankVolume = BigDecimal.valueOf(0.0);
+    private BigDecimal fuelTankVolume;
 
     @Column(name = "fuel_type", nullable = false)
     private String fuelType = ""; // Gasoline/Diesel/Biodiesel/Flex Fuel Vehicle/Electric/Hybrid
 
-    @Column(name = "seller_rating", nullable = false)
+    @Column(name = "seller_rating")
     @Digits(integer = 1, fraction = 1, message = "Rating must be between 0-5")
-    private BigDecimal sellerRating = BigDecimal.valueOf(0.0);
+    private BigDecimal sellerRating;
 
-    @Column(name = "owner_count", nullable = false)
-    private Integer ownerCount = 0;
+    @Column(name = "owner_count")
+    private Integer ownerCount;
 
     @Column(name = "trim_name", nullable = false)
     private String trimName = "";
 
-    @Column(name = "back_legroom", nullable = false)
+    @Column(name = "back_legroom")
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal backLegroom = BigDecimal.valueOf(0.0);
+    private BigDecimal backLegroom;
 
-    @Column(name = "front_legroom", nullable = false)
+    @Column(name = "front_legroom")
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal frontLegroom = BigDecimal.valueOf(0.0);
+    private BigDecimal frontLegroom;
 
-    @Column(name = "height", nullable = false)
+    @Column(name = "height")
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal height = BigDecimal.valueOf(0.0);
+    private BigDecimal height;
 
-    @Column(name = "length", nullable = false)
+    @Column(name = "length")
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal length = BigDecimal.valueOf(0.0);
+    private BigDecimal length;
 
-    @Column(name = "width", nullable = false)
+    @Column(name = "width")
     @Digits(integer = 2, fraction = 1)
-    private BigDecimal width = BigDecimal.valueOf(0.0);
+    private BigDecimal width;
 
-    @Column(name = "maximum_seating", nullable = false)
-    private Integer maximumSeating = 0;
+    @Column(name = "maximum_seating")
+    private Integer maximumSeating;
 
     @Column(name = "is_depreciated", nullable = false)
     private Boolean isDepreciated = false;
@@ -153,6 +160,10 @@ public class Car {
 
     @Column(name = "country", nullable = false)
     private String country = "";
+
+//    @JsonIgnore
+//    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+//    private List<CarOption> carOptions;
 
     public Long getId() {
         return id;
@@ -488,5 +499,13 @@ public class Car {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public String getListingColor() {
+        return listingColor;
+    }
+
+    public void setListingColor(String listingColor) {
+        this.listingColor = listingColor;
     }
 }

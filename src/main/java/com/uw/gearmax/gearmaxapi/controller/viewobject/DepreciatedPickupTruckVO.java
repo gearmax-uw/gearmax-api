@@ -1,40 +1,17 @@
-package com.uw.gearmax.gearmaxapi.domain;
+package com.uw.gearmax.gearmaxapi.controller.viewobject;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import java.io.Serializable;
+import java.math.BigDecimal;
 
-@Entity(name = "depreciation_info")
-public class DepreciatedCar implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    private Long id;
-
-    @Column(name = "frame_damaged", nullable = false)
+public class DepreciatedPickupTruckVO extends CarVO {
+    
     private Boolean isFrameDamaged;
-
-    @Column(name = "has_accidents", nullable = false)
     private Boolean hasAccidents;
-
-    @Column(name = "salvage", nullable = false)
     private Boolean isSalvaged;
-
-    @Column(name = "isCab", nullable = false)
     private Boolean isCab;
-
-    @Column(name = "isTheftTitle", nullable = false)
     private Boolean isTheftTitle;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private String bed;
+    private BigDecimal bedLength;
+    private String cabin;
 
     public Boolean getFrameDamaged() {
         return isFrameDamaged;
@@ -74,5 +51,29 @@ public class DepreciatedCar implements Serializable {
 
     public void setTheftTitle(Boolean theftTitle) {
         isTheftTitle = theftTitle;
+    }
+
+    public String getBed() {
+        return bed;
+    }
+
+    public void setBed(String bed) {
+        this.bed = bed;
+    }
+
+    public BigDecimal getBedLength() {
+        return bedLength;
+    }
+
+    public void setBedLength(BigDecimal bedLength) {
+        this.bedLength = bedLength;
+    }
+
+    public String getCabin() {
+        return cabin;
+    }
+
+    public void setCabin(String cabin) {
+        this.cabin = cabin;
     }
 }
