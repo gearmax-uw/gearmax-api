@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-public class Car implements Serializable {
+public class Car implements Serializable, Vehicle {
 
     private static final long serialVersionUID = 1L;
 

@@ -7,6 +7,7 @@ import com.uw.gearmax.gearmaxapi.controller.viewobject.PickupTruckVO;
 import com.uw.gearmax.gearmaxapi.domain.Car;
 import com.uw.gearmax.gearmaxapi.domain.DepreciatedCar;
 import com.uw.gearmax.gearmaxapi.domain.PickupTruck;
+import com.uw.gearmax.gearmaxapi.domain.Vehicle;
 import com.uw.gearmax.gearmaxapi.domain.es.EsCar;
 import com.uw.gearmax.gearmaxapi.error.BusinessException;
 import com.uw.gearmax.gearmaxapi.error.EmBusinessError;
@@ -206,12 +207,24 @@ public class CarController {
     public CommonReturnType listCars(@RequestParam Map<String, String> queryMap) {
         List<Car> cars = carService.listCarsWithDynamicQuery(queryMap);
         List<CarVO> carVOs = cars.stream().map(car -> {
-            // check if car is depreciated
-            if (Boolean.TRUE.equals(car.getDepreciated())) {
-                // if it is, get the depreciated car from repo
+            // check if the car is both depreciated and a pickup truck
+            if (Boolean.TRUE.equals(car.getDepreciated())
+                    && StringUtils.equals(car.getBodyType(), FieldVal.PICKUP_TRUCK.val())) {
                 DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
-                // copy both car's fields and depreciated car's fields to depreciated car's vo as DepreciatedCar extends Car
+                PickupTruck truck = pickupTruckService.getPickupTruckById(car.getId()).get();
+                return convertDepreciatedPickupTruckVOFromEntity(car, depreciatedCar, truck);
+            }
+            // check if the car is determined as depreciated
+            if (Boolean.TRUE.equals(car.getDepreciated())) {
+                // car is determined as depreciated
+                DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
                 return convertDepreciatedCarVOFromEntity(car, depreciatedCar);
+            }
+
+            // check if the car is a pickup truck
+            if (StringUtils.equals(car.getBodyType(), FieldVal.PICKUP_TRUCK.val())) {
+                PickupTruck truck = pickupTruckService.getPickupTruckById(car.getId()).get();
+                return convertPickupTruckVOFromEntity(car, truck);
             }
             return this.convertCarVOFromEntity(car);
         }).collect(Collectors.toList());
@@ -222,11 +235,32 @@ public class CarController {
     @ResponseBody
     public CommonReturnType eslistCars(@RequestParam Map<String, String> queryMap) {
         List<EsCar> cars = esCarService.listCarsWithDynamicQuery(queryMap);
-        // todo: wrap to vo class
-        return CommonReturnType.create(cars);
+        List<CarVO> carVOs = cars.stream().map(car -> {
+            // check if the car is both depreciated and a pickup truck
+            if (Boolean.TRUE.equals(car.getDepreciated())
+                    && StringUtils.equals(car.getBodyType(), FieldVal.PICKUP_TRUCK.val())) {
+                DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
+                PickupTruck truck = pickupTruckService.getPickupTruckById(car.getId()).get();
+                return convertDepreciatedPickupTruckVOFromEntity(car, depreciatedCar, truck);
+            }
+            // check if the car is determined as depreciated
+            if (Boolean.TRUE.equals(car.getDepreciated())) {
+                // car is determined as depreciated
+                DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId()).get();
+                return convertDepreciatedCarVOFromEntity(car, depreciatedCar);
+            }
+
+            // check if the car is a pickup truck
+            if (StringUtils.equals(car.getBodyType(), FieldVal.PICKUP_TRUCK.val())) {
+                PickupTruck truck = pickupTruckService.getPickupTruckById(car.getId()).get();
+                return convertPickupTruckVOFromEntity(car, truck);
+            }
+            return this.convertCarVOFromEntity(car);
+        }).collect(Collectors.toList());
+        return CommonReturnType.create(carVOs);
     }
 
-    private CarVO convertCarVOFromEntity(Car car) {
+    private CarVO convertCarVOFromEntity(Vehicle car) {
         CarVO carVO = new CarVO();
         // copy properties of car to carVO
         // make sure Car and CarVO have same attributes
@@ -234,14 +268,14 @@ public class CarController {
         return carVO;
     }
 
-    private DepreciatedCarVO convertDepreciatedCarVOFromEntity(Car car, DepreciatedCar depreciatedCar) {
+    private DepreciatedCarVO convertDepreciatedCarVOFromEntity(Vehicle car, DepreciatedCar depreciatedCar) {
         DepreciatedCarVO depreciatedCarVO = new DepreciatedCarVO();
         BeanUtils.copyProperties(car, depreciatedCarVO);
         BeanUtils.copyProperties(depreciatedCar, depreciatedCarVO);
         return depreciatedCarVO;
     }
 
-    private DepreciatedPickupTruckVO convertDepreciatedPickupTruckVOFromEntity(Car car, DepreciatedCar depreciatedCar, PickupTruck truck) {
+    private DepreciatedPickupTruckVO convertDepreciatedPickupTruckVOFromEntity(Vehicle car, DepreciatedCar depreciatedCar, PickupTruck truck) {
         DepreciatedPickupTruckVO depreciatedPickupTruckVO = new DepreciatedPickupTruckVO();
         BeanUtils.copyProperties(car, depreciatedPickupTruckVO);
         BeanUtils.copyProperties(depreciatedCar, depreciatedPickupTruckVO);
@@ -249,7 +283,7 @@ public class CarController {
         return depreciatedPickupTruckVO;
     }
 
-    private PickupTruckVO convertPickupTruckVOFromEntity(Car car, PickupTruck truck) {
+    private PickupTruckVO convertPickupTruckVOFromEntity(Vehicle car, PickupTruck truck) {
         PickupTruckVO pickupTruckVO = new PickupTruckVO();
         BeanUtils.copyProperties(car, pickupTruckVO);
         BeanUtils.copyProperties(truck, pickupTruckVO);

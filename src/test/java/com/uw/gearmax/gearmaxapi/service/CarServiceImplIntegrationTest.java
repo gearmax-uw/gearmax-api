@@ -4,6 +4,7 @@ import com.uw.gearmax.gearmaxapi.domain.Car;
 import com.uw.gearmax.gearmaxapi.error.BusinessException;
 import com.uw.gearmax.gearmaxapi.repository.CarRepository;
 import com.uw.gearmax.gearmaxapi.service.impl.CarServiceImpl;
+import com.uw.gearmax.gearmaxapi.util.UrlParameter;
 import com.uw.gearmax.gearmaxapi.validator.ValidationResult;
 import com.uw.gearmax.gearmaxapi.validator.ValidatorImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -14,12 +15,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,6 +59,47 @@ class CarServiceImplIntegrationTest {
     public void tearDown() {
         car1 = car2 = null;
         cars = null;
+    }
+
+    @Test
+    void listCarWithGivenId() {
+        Car expectedCar = car1;
+
+        when(carRepository.findById(anyLong())).thenReturn(Optional.of(car1));
+
+        Car returnedCar = carService.getCarById(1L).get();
+
+        assertThat(returnedCar).isEqualTo(expectedCar);
+    }
+
+    @Test
+    void listCarsWithDynamicQueryShouldReturnSatisfiedCars() {
+        Map<String, String> queryMap = new HashMap<>();
+        queryMap.put(UrlParameter.PAGE_SIZE.val(), "1");
+        queryMap.put(UrlParameter.PRICE.val(), "10000-100000");
+        queryMap.put(UrlParameter.BODY_TYPE.val(), "coupe");
+        queryMap.put(UrlParameter.MAKE_NAME.val(), "land-rover");
+        queryMap.put(UrlParameter.LISTING_COLOR.val(), "black");
+        queryMap.put(UrlParameter.YEAR.val(), "2010-2020");
+        queryMap.put(UrlParameter.MILEAGE.val(), "1500");
+        queryMap.put(UrlParameter.MAXIMUM_SEATING.val(), "10");
+
+        Car expectedCar = new Car();
+        expectedCar.setPrice(10000);
+        expectedCar.setBodyType("Coupe");
+        expectedCar.setMakeName("Land Rover");
+        expectedCar.setListingColor("Black");
+        expectedCar.setYear(2012);
+        expectedCar.setMileage(1000);
+        expectedCar.setMaximumSeating(5);
+
+        Page<Car> returnedCar = new PageImpl<>(Arrays.asList(expectedCar));
+
+        when(carRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(returnedCar);
+
+        List<Car> returnedCars = carService.listCarsWithDynamicQuery(queryMap);
+
+        assertThat(returnedCars.get(0)).isEqualTo(expectedCar);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.uw.gearmax.gearmaxapi.domain.es;
 
+import com.uw.gearmax.gearmaxapi.domain.Vehicle;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(indexName = "used-car")
-public class EsCar implements Serializable {
+public class EsCar implements Serializable, Vehicle {
 
     private static final long serialVersionUID = 1L;
 
@@ -53,6 +54,8 @@ public class EsCar implements Serializable {
     private BigDecimal length;
     @Field(name = "listed_date", type = FieldType.Date)
     private LocalDate listedDate;
+    @Field(name = "listing_color", type = FieldType.Keyword, index = false)
+    private String listingColor;
     @Field(name = "main_picture_url", type = FieldType.Keyword, index = false)
     private String mainPictureUrl = "";
     @Field(name = "major_options", type = FieldType.Keyword)
@@ -240,6 +243,14 @@ public class EsCar implements Serializable {
 
     public void setListedDate(LocalDate listedDate) {
         this.listedDate = listedDate;
+    }
+
+    public String getListingColor() {
+        return listingColor;
+    }
+
+    public void setListingColor(String listingColor) {
+        this.listingColor = listingColor;
     }
 
     public String getMainPictureUrl() {
