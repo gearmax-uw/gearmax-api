@@ -58,6 +58,17 @@ The technologies that the project uses:
 - Redis
 - Docker
 
+### About React (Frontend)
+
+Please see [repo](https://github.com/gearmax-uw/gearmax-react-app) of GearMax-React-App.
+
+### About Data
+
+Please see [repo](https://github.com/gearmax-uw/gearmax-data) of GearMax-Data.
+
+---
+**The contents below is for GearMax-API specifically.**
+
 ### Project Structure
 
 Use car-related classes as the example:
