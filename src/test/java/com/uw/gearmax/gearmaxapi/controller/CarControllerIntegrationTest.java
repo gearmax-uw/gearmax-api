@@ -107,7 +107,7 @@ class CarControllerIntegrationTest {
     @Test
     void listNormalCarsShouldReturnSatisfiedCars() throws Exception {
         RequestBuilder request = MockMvcRequestBuilders
-                .get("/car/eslist")
+                .get("/car/list")
                 .accept(MediaType.APPLICATION_JSON)
                 .param(UrlParameter.PAGE_SIZE.val(), "1")
                 .param(UrlParameter.PRICE.val(), "10000-100000")
@@ -150,7 +150,7 @@ class CarControllerIntegrationTest {
     @Test
     void listDepreciatedPickupCarsShouldReturnSatisfiedCars() throws Exception {
         RequestBuilder request = MockMvcRequestBuilders
-                .get("/car/eslist")
+                .get("/car/list")
                 .accept(MediaType.APPLICATION_JSON)
                 .param(UrlParameter.PAGE_SIZE.val(), "1")
                 .param(UrlParameter.PRICE.val(), "10000-100000")
@@ -188,8 +188,8 @@ class CarControllerIntegrationTest {
         expectedPickupTruck.setBedLength(BigDecimal.TEN);
 
         when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
-        when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(Optional.of(expectedDepreciatedCar));
-        when(pickupTruckService.getPickupTruckById(anyLong())).thenReturn(Optional.of(expectedPickupTruck));
+        when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(expectedDepreciatedCar);
+        when(pickupTruckService.getPickupTruckById(anyLong())).thenReturn(expectedPickupTruck);
 
         MvcResult mvcResult = mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -211,7 +211,7 @@ class CarControllerIntegrationTest {
     @Test
     void listPickupCarsShouldReturnSatisfiedCars() throws Exception {
         RequestBuilder request = MockMvcRequestBuilders
-                .get("/car/eslist")
+                .get("/car/list")
                 .accept(MediaType.APPLICATION_JSON)
                 .param(UrlParameter.PAGE_SIZE.val(), "1")
                 .param(UrlParameter.PRICE.val(), "10000-100000")
@@ -240,7 +240,7 @@ class CarControllerIntegrationTest {
         expectedPickupTruck.setBedLength(BigDecimal.TEN);
 
         when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
-        when(pickupTruckService.getPickupTruckById(anyLong())).thenReturn(Optional.of(expectedPickupTruck));
+        when(pickupTruckService.getPickupTruckById(anyLong())).thenReturn(expectedPickupTruck);
 
         MvcResult mvcResult = mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -261,7 +261,7 @@ class CarControllerIntegrationTest {
     @Test
     void listDepreciatedCarsShouldReturnSatisfiedCars() throws Exception {
         RequestBuilder request = MockMvcRequestBuilders
-                .get("/car/eslist")
+                .get("/car/list")
                 .accept(MediaType.APPLICATION_JSON)
                 .param(UrlParameter.PAGE_SIZE.val(), "1")
                 .param(UrlParameter.PRICE.val(), "10000-100000")
@@ -291,7 +291,7 @@ class CarControllerIntegrationTest {
         expectedDepreciatedCar.setTheftTitle(true);
 
         when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
-        when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(Optional.of(expectedDepreciatedCar));
+        when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(expectedDepreciatedCar);
 
         MvcResult mvcResult = mockMvc.perform(request)
                 .andExpect(status().isOk())

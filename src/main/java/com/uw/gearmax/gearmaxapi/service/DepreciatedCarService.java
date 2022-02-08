@@ -9,7 +9,9 @@ public interface DepreciatedCarService {
 
     DepreciatedCar saveDepreciatedCar(DepreciatedCar car);
 
-    Optional<DepreciatedCar> getDepreciatedCarById(Long id);
+    DepreciatedCar getDepreciatedCarById(Long id) throws BusinessException;
+
+    Optional<DepreciatedCar> getOptionalDepreciatedCarById(Long id);
 
     DepreciatedCar removeDepreciatedCar(Long id) throws BusinessException;
 }

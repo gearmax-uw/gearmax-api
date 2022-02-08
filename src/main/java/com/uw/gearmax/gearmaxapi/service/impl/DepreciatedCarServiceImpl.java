@@ -22,18 +22,24 @@ public class DepreciatedCarServiceImpl implements DepreciatedCarService {
     }
 
     @Override
-    public Optional<DepreciatedCar> getDepreciatedCarById(Long id) {
+    public DepreciatedCar getDepreciatedCarById(Long id) throws BusinessException {
+        Optional<DepreciatedCar> optionalDepreciatedCar = getOptionalDepreciatedCarById(id);
+        if (!optionalDepreciatedCar.isPresent()) {
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
+                    "Depreciated car to be obtained does not exist");
+        }
+        return optionalDepreciatedCar.get();
+    }
+
+    @Override
+    public Optional<DepreciatedCar> getOptionalDepreciatedCarById(Long id) {
         return depreciatedCarRepository.findById(id);
     }
 
     @Override
     public DepreciatedCar removeDepreciatedCar(Long id) throws BusinessException {
-        Optional<DepreciatedCar> optionalCar = getDepreciatedCarById(id);
-        if (!optionalCar.isPresent()) {
-            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
-                    "Depreciated car to be removed does not exist");
-        }
+        DepreciatedCar depreciatedCar = getDepreciatedCarById(id);
         depreciatedCarRepository.deleteById(id);
-        return optionalCar.get();
+        return depreciatedCar;
     }
 }

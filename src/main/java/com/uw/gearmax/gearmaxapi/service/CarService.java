@@ -14,7 +14,9 @@ public interface CarService {
 
     Car saveCar(Car car) throws BusinessException;
 
-    Optional<Car> getCarById(Long id);
+    Car getCarById(Long id) throws BusinessException;
+
+    Optional<Car> getOptionalCarById(Long id);
 
     Car removeCar(Long id) throws BusinessException;
 

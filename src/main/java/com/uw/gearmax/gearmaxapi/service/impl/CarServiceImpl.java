@@ -54,14 +54,10 @@ public class CarServiceImpl extends CommonServiceImpl implements CarService {
     @Override
     @Transactional
     public Car removeCar(Long id) throws BusinessException {
-        Optional<Car> optionalCar = getCarById(id);
         // if remove a car does not exist, throw an exception
-        if (!optionalCar.isPresent()) {
-            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
-                    "Car to be removed does not exist");
-        }
+        Car car = getCarById(id);
         carRepository.deleteById(id);
-        return optionalCar.get();
+        return car;
     }
 
     @Override
@@ -80,8 +76,18 @@ public class CarServiceImpl extends CommonServiceImpl implements CarService {
     }
 
     @Override
-    public Optional<Car> getCarById(Long id) {
+    public Optional<Car> getOptionalCarById(Long id) {
         return carRepository.findById(id);
+    }
+
+    @Override
+    public Car getCarById(Long id) throws BusinessException {
+        Optional<Car> optionalCar = getOptionalCarById(id);
+        if (!optionalCar.isPresent()) {
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
+                    "Car to be obtained does not exist");
+        }
+        return optionalCar.get();
     }
 
     @Override

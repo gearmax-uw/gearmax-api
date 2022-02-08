@@ -1,6 +1,8 @@
 package com.uw.gearmax.gearmaxapi.controller.viewobject;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CarVO {
 
@@ -10,8 +12,10 @@ public class CarVO {
     private Integer year;
     private String bodyType;
     private String makeName;
+    private String modelName;
     private String exteriorColor;
     private String interiorColor;
+    private String listingColor;
     private Integer mileage;
     private Integer maximumSeating;
     private String transmissionDisplay;
@@ -19,6 +23,7 @@ public class CarVO {
     private String city;
     private String country;
     private LocalDate listedDate;
+    private List<String> majorOptions;
 
     public Long getId() {
         return id;
@@ -138,5 +143,29 @@ public class CarVO {
 
     public void setListedDate(LocalDate listedDate) {
         this.listedDate = listedDate;
+    }
+
+    public String getModelName() {
+        return modelName;
+    }
+
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
+    }
+
+    public String getListingColor() {
+        return listingColor;
+    }
+
+    public void setListingColor(String listingColor) {
+        this.listingColor = listingColor;
+    }
+
+    public List<String> getMajorOptions() {
+        return majorOptions;
+    }
+
+    public void setMajorOptions(List<String> majorOptions) {
+        this.majorOptions = majorOptions;
     }
 }

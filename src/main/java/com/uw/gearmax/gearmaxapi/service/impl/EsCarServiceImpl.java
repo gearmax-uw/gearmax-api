@@ -1,6 +1,9 @@
 package com.uw.gearmax.gearmaxapi.service.impl;
 
 import com.uw.gearmax.gearmaxapi.domain.es.EsCar;
+import com.uw.gearmax.gearmaxapi.error.BusinessException;
+import com.uw.gearmax.gearmaxapi.error.EmBusinessError;
+import com.uw.gearmax.gearmaxapi.repository.es.EsCarRepository;
 import com.uw.gearmax.gearmaxapi.service.EsCarService;
 import com.uw.gearmax.gearmaxapi.util.CommonSymbol;
 import com.uw.gearmax.gearmaxapi.util.CommonUtility;
@@ -20,13 +23,27 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService {
 
     @Autowired
+    private EsCarRepository esCarRepository;
+
+    @Autowired
     private ElasticsearchOperations elasticsearchOperations;
+
+    @Override
+    public EsCar getCarById(Long id) throws BusinessException {
+        Optional<EsCar> optionalEsCar = esCarRepository.findById(id);
+        if (!optionalEsCar.isPresent()) {
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
+                    "Car to be obtained does not exist");
+        }
+        return optionalEsCar.get();
+    }
 
     @Override
     public List<EsCar> listCarsWithQuery(Query searchQuery) {

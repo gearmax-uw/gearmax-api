@@ -24,7 +24,6 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -62,12 +61,12 @@ class CarServiceImplIntegrationTest {
     }
 
     @Test
-    void listCarWithGivenId() {
+    void listCarWithGivenId() throws BusinessException {
         Car expectedCar = car1;
 
         when(carRepository.findById(anyLong())).thenReturn(Optional.of(car1));
 
-        Car returnedCar = carService.getCarById(1L).get();
+        Car returnedCar = carService.getCarById(1L);
 
         assertThat(returnedCar).isEqualTo(expectedCar);
     }
@@ -117,7 +116,7 @@ class CarServiceImplIntegrationTest {
 
     @Test
     void givenIdToRemoveThenShouldRemoveCar() throws Exception {
-        when(carService.getCarById(anyLong())).thenReturn(Optional.of(car1));
+        when(carService.getOptionalCarById(anyLong())).thenReturn(Optional.of(car1));
 
         carService.removeCar(car1.getId());
 
@@ -127,10 +126,8 @@ class CarServiceImplIntegrationTest {
     @Test
     void givenNotExistCarToRemoveThenShouldThrowException() {
         Optional<Car> notExistCar = Optional.empty();
-        when(carService.getCarById(anyLong())).thenReturn(notExistCar);
-
-        BusinessException e = assertThrows(BusinessException.class, () -> carService.removeCar(anyLong()));
-        assertEquals("Car to be removed does not exist", e.getErrMsg());
+        when(carService.getOptionalCarById(anyLong())).thenReturn(notExistCar);
+        assertThrows(BusinessException.class, () -> carService.removeCar(anyLong()));
     }
 
 //    @Test

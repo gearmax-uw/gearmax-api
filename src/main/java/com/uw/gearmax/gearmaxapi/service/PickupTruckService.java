@@ -11,5 +11,7 @@ public interface PickupTruckService { //save objects into back_end
 
     PickupTruck removePickupTruck(Long id) throws BusinessException;
 
-    Optional<PickupTruck> getPickupTruckById(Long id);
+    PickupTruck getPickupTruckById(Long id) throws BusinessException;
+
+    Optional<PickupTruck> getOptionalPickupTruckById(Long id);
 }

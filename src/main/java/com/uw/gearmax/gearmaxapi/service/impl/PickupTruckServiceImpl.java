@@ -26,18 +26,23 @@ public class PickupTruckServiceImpl implements PickupTruckService {
     @Override
     public PickupTruck removePickupTruck(Long id) throws BusinessException {
         // delete from pick_truck where id = 'id'
-        Optional<PickupTruck> returnedTruck = getPickupTruckById(id);
-        if (!returnedTruck.isPresent()) {
-            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
-                    "Car to be removed does not exist");
-        }
-
+        PickupTruck pickupTruck = getPickupTruckById(id);
         pickupTruckRepository.deleteById(id);
-        return returnedTruck.get();
+        return pickupTruck;
     }
 
     @Override
-    public Optional<PickupTruck> getPickupTruckById(Long id) {
+    public PickupTruck getPickupTruckById(Long id) throws BusinessException {
+        Optional<PickupTruck> optionalPickupTruck = getOptionalPickupTruckById(id);
+        if (!optionalPickupTruck.isPresent()) {
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,
+                    "Pickup truck to be obtained does not exist");
+        }
+        return optionalPickupTruck.get();
+    }
+
+    @Override
+    public Optional<PickupTruck> getOptionalPickupTruckById(Long id) {
         return pickupTruckRepository.findById(id);
     }
 }
