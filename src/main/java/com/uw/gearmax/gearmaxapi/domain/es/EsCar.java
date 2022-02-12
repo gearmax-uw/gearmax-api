@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Document(indexName = "used-car")
+@Document(indexName = "used-car", createIndex = false)
 public class EsCar implements Serializable, Vehicle {
 
     private static final long serialVersionUID = 1L;

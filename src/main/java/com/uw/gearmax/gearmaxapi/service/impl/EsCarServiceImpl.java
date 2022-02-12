@@ -10,7 +10,9 @@ import com.uw.gearmax.gearmaxapi.util.CommonUtility;
 import com.uw.gearmax.gearmaxapi.util.EsSearchKey;
 import com.uw.gearmax.gearmaxapi.util.UrlParameter;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.FuzzyQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -130,7 +132,9 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
 
         if (StringUtils.isNotEmpty(city)) {
             String convertedCity = CommonUtility.convertUrlParamValue(city);
-            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.CITY.val(), convertedCity));
+            // boolQueryBuilder.should(QueryBuilders.termQuery(EsSearchKey.CITY.val(), convertedCity));
+            // boolQueryBuilder.must(QueryBuilders.fuzzyQuery(EsSearchKey.CITY.val(), convertedCity));
+            boolQueryBuilder.must(QueryBuilders.matchQuery(EsSearchKey.CITY.val(), convertedCity).fuzziness(Fuzziness.AUTO));
         }
 
         if (StringUtils.isNotEmpty(features)) {
