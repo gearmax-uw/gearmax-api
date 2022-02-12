@@ -16,6 +16,7 @@ public enum UrlParameter {
     MILEAGE("mileage"),
     MAXIMUM_SEATING("maximumSeating"),
     TRANSMISSION_DISPLAY("transmissionDisplay"),
+    CITY("city"),
     FEATURES("features");
 
     private final String s;

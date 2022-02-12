@@ -106,6 +106,7 @@ public class CarServiceImpl extends CommonServiceImpl implements CarService {
         String makeName = queryMap.getOrDefault(UrlParameter.MAKE_NAME.val(), "");
         String listingColor = queryMap.getOrDefault(UrlParameter.LISTING_COLOR.val(), "");
         String yearRange = queryMap.getOrDefault(UrlParameter.YEAR.val(), "");
+        String city = queryMap.getOrDefault(UrlParameter.CITY.val(), "");
         Integer mileage = null;
         if (queryMap.containsKey(UrlParameter.MILEAGE.val())) {
             mileage = Integer.parseInt(queryMap.get(UrlParameter.MILEAGE.val()));
@@ -160,6 +161,10 @@ public class CarServiceImpl extends CommonServiceImpl implements CarService {
         if (StringUtils.isNotEmpty(transmissionDisplay)) {
             String convertedTransmissionDisplay = CommonUtility.convertUrlParamValue(transmissionDisplay);
             builder.with(SpecSearchKey.TRANSMISSION_DISPLAY.val(), SearchOperation.EQUALITY, convertedTransmissionDisplay);
+        }
+        if (StringUtils.isNotEmpty(city)) {
+            String convertedCity = CommonUtility.convertUrlParamValue(city);
+            builder.with(SpecSearchKey.CITY.val(), SearchOperation.EQUALITY, convertedCity);
         }
 
         return builder.build();

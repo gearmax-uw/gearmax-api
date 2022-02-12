@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Controller
+@CrossOrigin
 @RequestMapping("/car")
 public class CarController {
 

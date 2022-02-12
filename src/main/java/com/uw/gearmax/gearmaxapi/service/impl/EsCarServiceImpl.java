@@ -71,6 +71,7 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
         String makeName = queryMap.getOrDefault(UrlParameter.MAKE_NAME.val(), "");
         String listingColor = queryMap.getOrDefault(UrlParameter.LISTING_COLOR.val(), "");
         String yearRange = queryMap.getOrDefault(UrlParameter.YEAR.val(), "");
+        String city = queryMap.getOrDefault(UrlParameter.CITY.val(), "");
         Integer mileage = null;
         if (queryMap.containsKey(UrlParameter.MILEAGE.val())) {
             mileage = Integer.parseInt(queryMap.get(UrlParameter.MILEAGE.val()));
@@ -125,6 +126,11 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
         if (StringUtils.isNotEmpty(transmissionDisplay)) {
             String convertedTransmissionDisplay = CommonUtility.convertUrlParamValue(transmissionDisplay);
             boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.TRANSMISSION_DISPLAY.val(), convertedTransmissionDisplay));
+        }
+
+        if (StringUtils.isNotEmpty(city)) {
+            String convertedCity = CommonUtility.convertUrlParamValue(city);
+            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.CITY.val(), convertedCity));
         }
 
         if (StringUtils.isNotEmpty(features)) {

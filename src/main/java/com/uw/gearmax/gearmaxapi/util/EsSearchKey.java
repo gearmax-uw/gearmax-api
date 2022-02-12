@@ -13,7 +13,8 @@ public enum EsSearchKey {
     MILEAGE("mileage"),
     MAXIMUM_SEATING("maximum_seating"),
     TRANSMISSION_DISPLAY("transmission_display"),
-    MAJOR_OPTIONS("major_options");
+    CITY("city"),
+    MAJOR_OPTIONS("major_options"),;
 
     private final String s;
 
