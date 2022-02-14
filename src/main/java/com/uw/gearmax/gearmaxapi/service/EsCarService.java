@@ -2,6 +2,7 @@ package com.uw.gearmax.gearmaxapi.service;
 
 import com.uw.gearmax.gearmaxapi.domain.es.EsCar;
 import com.uw.gearmax.gearmaxapi.error.BusinessException;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.Query;
 
 import java.util.List;
@@ -14,4 +15,6 @@ public interface EsCarService {
     List<EsCar> listCarsWithQuery(Query query);
 
     List<EsCar> listCarsWithDynamicQuery(Map<String, String> queryMap);
+
+    SearchHits<EsCar> listSearchHitsOfCarsWithDynamicQuery(Map<String, String> queryMap);
 }

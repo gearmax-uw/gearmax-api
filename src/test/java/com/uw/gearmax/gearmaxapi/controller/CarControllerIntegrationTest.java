@@ -104,210 +104,210 @@ class CarControllerIntegrationTest {
 //                .andExpect(status().isOk());
 //    }
 
-    @Test
-    void listNormalCarsShouldReturnSatisfiedCars() throws Exception {
-        RequestBuilder request = MockMvcRequestBuilders
-                .get("/car/list")
-                .accept(MediaType.APPLICATION_JSON)
-                .param(UrlParameter.PAGE_SIZE.val(), "1")
-                .param(UrlParameter.PRICE.val(), "10000-100000")
-                .param(UrlParameter.BODY_TYPE.val(), "coupe")
-                .param(UrlParameter.MAKE_NAME.val(), "land-rover")
-                .param(UrlParameter.LISTING_COLOR.val(), "black")
-                .param(UrlParameter.YEAR.val(), "2010-2020")
-                .param(UrlParameter.MILEAGE.val(), "1500")
-                .param(UrlParameter.MAXIMUM_SEATING.val(), "10");
+//    @Test
+//    void listNormalCarsShouldReturnSatisfiedCars() throws Exception {
+//        RequestBuilder request = MockMvcRequestBuilders
+//                .get("/car/list")
+//                .accept(MediaType.APPLICATION_JSON)
+//                .param(UrlParameter.PAGE_SIZE.val(), "1")
+//                .param(UrlParameter.PRICE.val(), "10000-100000")
+//                .param(UrlParameter.BODY_TYPE.val(), "coupe")
+//                .param(UrlParameter.MAKE_NAME.val(), "land-rover")
+//                .param(UrlParameter.LISTING_COLOR.val(), "black")
+//                .param(UrlParameter.YEAR.val(), "2010-2020")
+//                .param(UrlParameter.MILEAGE.val(), "1500")
+//                .param(UrlParameter.MAXIMUM_SEATING.val(), "10");
+//
+//        // expect a normal car
+//        EsCar expectedEsCar = new EsCar();
+//        expectedEsCar.setId(1L);
+//        expectedEsCar.setPrice(10000);
+//        expectedEsCar.setBodyType("Coupe");
+//        expectedEsCar.setMakeName("Land Rover");
+//        expectedEsCar.setListingColor("Black");
+//        expectedEsCar.setYear(2012);
+//        expectedEsCar.setMileage(1000);
+//        expectedEsCar.setMaximumSeating(5);
+//
+//        List<EsCar> returnedCars = Arrays.asList(expectedEsCar);
+//
+//        when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
+//
+//        MvcResult mvcResult = mockMvc.perform(request)
+//                .andExpect(status().isOk())
+//                .andReturn();
+//
+//        CarVO carVO = new CarVO();
+//        BeanUtils.copyProperties(expectedEsCar, carVO);
+//        CommonReturnType expectedResponseBody = CommonReturnType.create(Arrays.asList(carVO));
+//
+//        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+//
+//        assertEquals(StringUtils.deleteWhitespace(objectMapper.writeValueAsString(expectedResponseBody)),
+//                StringUtils.deleteWhitespace(actualResponseBody));
+//    }
 
-        // expect a normal car
-        EsCar expectedEsCar = new EsCar();
-        expectedEsCar.setId(1L);
-        expectedEsCar.setPrice(10000);
-        expectedEsCar.setBodyType("Coupe");
-        expectedEsCar.setMakeName("Land Rover");
-        expectedEsCar.setListingColor("Black");
-        expectedEsCar.setYear(2012);
-        expectedEsCar.setMileage(1000);
-        expectedEsCar.setMaximumSeating(5);
+//    @Test
+//    void listDepreciatedPickupCarsShouldReturnSatisfiedCars() throws Exception {
+//        RequestBuilder request = MockMvcRequestBuilders
+//                .get("/car/list")
+//                .accept(MediaType.APPLICATION_JSON)
+//                .param(UrlParameter.PAGE_SIZE.val(), "1")
+//                .param(UrlParameter.PRICE.val(), "10000-100000")
+//                .param(UrlParameter.BODY_TYPE.val(), "pickup-truck")
+//                .param(UrlParameter.MAKE_NAME.val(), "land-rover")
+//                .param(UrlParameter.LISTING_COLOR.val(), "black")
+//                .param(UrlParameter.YEAR.val(), "2010-2020")
+//                .param(UrlParameter.MILEAGE.val(), "1500")
+//                .param(UrlParameter.MAXIMUM_SEATING.val(), "10");
+//
+//        // expect a normal car
+//        EsCar expectedEsCar = new EsCar();
+//        expectedEsCar.setId(1L);
+//        expectedEsCar.setPrice(10000);
+//        expectedEsCar.setBodyType("Pickup Truck");
+//        expectedEsCar.setDepreciated(true);
+//        expectedEsCar.setMakeName("Land Rover");
+//        expectedEsCar.setListingColor("Black");
+//        expectedEsCar.setYear(2012);
+//        expectedEsCar.setMileage(1000);
+//        expectedEsCar.setMaximumSeating(5);
+//
+//        // expect a car which is depreciated and pickup truck
+//        expectedEsCar.setDepreciated(true);
+//        expectedEsCar.setBodyType(FieldVal.PICKUP_TRUCK.val());
+//
+//        List<EsCar> returnedCars = Arrays.asList(expectedEsCar);
+//
+//        DepreciatedCar expectedDepreciatedCar = new DepreciatedCar();
+//        expectedDepreciatedCar.setId(expectedEsCar.getId());
+//        expectedDepreciatedCar.setTheftTitle(true);
+//
+//        PickupTruck expectedPickupTruck = new PickupTruck();
+//        expectedPickupTruck.setId(expectedEsCar.getId());
+//        expectedPickupTruck.setBedLength(BigDecimal.TEN);
+//
+//        when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
+//        when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(expectedDepreciatedCar);
+//        when(pickupTruckService.getPickupTruckById(anyLong())).thenReturn(expectedPickupTruck);
+//
+//        MvcResult mvcResult = mockMvc.perform(request)
+//                .andExpect(status().isOk())
+//                .andReturn();
+//
+//        DepreciatedPickupTruckVO depreciatedPickupTruckVO = new DepreciatedPickupTruckVO();
+//        BeanUtils.copyProperties(expectedEsCar, depreciatedPickupTruckVO);
+//        BeanUtils.copyProperties(expectedDepreciatedCar, depreciatedPickupTruckVO);
+//        BeanUtils.copyProperties(expectedPickupTruck, depreciatedPickupTruckVO);
+//
+//        CommonReturnType expectedResponseBody = CommonReturnType.create(Arrays.asList(depreciatedPickupTruckVO));
+//
+//        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+//
+//        assertEquals(StringUtils.deleteWhitespace(objectMapper.writeValueAsString(expectedResponseBody)),
+//                StringUtils.deleteWhitespace(actualResponseBody));
+//    }
 
-        List<EsCar> returnedCars = Arrays.asList(expectedEsCar);
+//    @Test
+//    void listPickupCarsShouldReturnSatisfiedCars() throws Exception {
+//        RequestBuilder request = MockMvcRequestBuilders
+//                .get("/car/list")
+//                .accept(MediaType.APPLICATION_JSON)
+//                .param(UrlParameter.PAGE_SIZE.val(), "1")
+//                .param(UrlParameter.PRICE.val(), "10000-100000")
+//                .param(UrlParameter.BODY_TYPE.val(), "pickup-truck")
+//                .param(UrlParameter.MAKE_NAME.val(), "land-rover")
+//                .param(UrlParameter.LISTING_COLOR.val(), "black")
+//                .param(UrlParameter.YEAR.val(), "2010-2020")
+//                .param(UrlParameter.MILEAGE.val(), "1500")
+//                .param(UrlParameter.MAXIMUM_SEATING.val(), "10");
+//
+//        // expect a pickup truck
+//        EsCar expectedEsCar = new EsCar();
+//        expectedEsCar.setId(1L);
+//        expectedEsCar.setPrice(10000);
+//        expectedEsCar.setBodyType(FieldVal.PICKUP_TRUCK.val());
+//        expectedEsCar.setMakeName("Land Rover");
+//        expectedEsCar.setListingColor("Black");
+//        expectedEsCar.setYear(2012);
+//        expectedEsCar.setMileage(1000);
+//        expectedEsCar.setMaximumSeating(5);
+//
+//        List<EsCar> returnedCars = Arrays.asList(expectedEsCar);
+//
+//        PickupTruck expectedPickupTruck = new PickupTruck();
+//        expectedPickupTruck.setId(expectedEsCar.getId());
+//        expectedPickupTruck.setBedLength(BigDecimal.TEN);
+//
+//        when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
+//        when(pickupTruckService.getPickupTruckById(anyLong())).thenReturn(expectedPickupTruck);
+//
+//        MvcResult mvcResult = mockMvc.perform(request)
+//                .andExpect(status().isOk())
+//                .andReturn();
+//
+//        PickupTruckVO pickupTruckVO = new PickupTruckVO();
+//        BeanUtils.copyProperties(expectedEsCar, pickupTruckVO);
+//        BeanUtils.copyProperties(expectedPickupTruck, pickupTruckVO);
+//
+//        CommonReturnType expectedResponseBody = CommonReturnType.create(Arrays.asList(pickupTruckVO));
+//
+//        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+//
+//        assertEquals(StringUtils.deleteWhitespace(objectMapper.writeValueAsString(expectedResponseBody)),
+//                StringUtils.deleteWhitespace(actualResponseBody));
+//    }
 
-        when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
-
-        MvcResult mvcResult = mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andReturn();
-
-        CarVO carVO = new CarVO();
-        BeanUtils.copyProperties(expectedEsCar, carVO);
-        CommonReturnType expectedResponseBody = CommonReturnType.create(Arrays.asList(carVO));
-
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-
-        assertEquals(StringUtils.deleteWhitespace(objectMapper.writeValueAsString(expectedResponseBody)),
-                StringUtils.deleteWhitespace(actualResponseBody));
-    }
-
-    @Test
-    void listDepreciatedPickupCarsShouldReturnSatisfiedCars() throws Exception {
-        RequestBuilder request = MockMvcRequestBuilders
-                .get("/car/list")
-                .accept(MediaType.APPLICATION_JSON)
-                .param(UrlParameter.PAGE_SIZE.val(), "1")
-                .param(UrlParameter.PRICE.val(), "10000-100000")
-                .param(UrlParameter.BODY_TYPE.val(), "pickup-truck")
-                .param(UrlParameter.MAKE_NAME.val(), "land-rover")
-                .param(UrlParameter.LISTING_COLOR.val(), "black")
-                .param(UrlParameter.YEAR.val(), "2010-2020")
-                .param(UrlParameter.MILEAGE.val(), "1500")
-                .param(UrlParameter.MAXIMUM_SEATING.val(), "10");
-
-        // expect a normal car
-        EsCar expectedEsCar = new EsCar();
-        expectedEsCar.setId(1L);
-        expectedEsCar.setPrice(10000);
-        expectedEsCar.setBodyType("Pickup Truck");
-        expectedEsCar.setDepreciated(true);
-        expectedEsCar.setMakeName("Land Rover");
-        expectedEsCar.setListingColor("Black");
-        expectedEsCar.setYear(2012);
-        expectedEsCar.setMileage(1000);
-        expectedEsCar.setMaximumSeating(5);
-
-        // expect a car which is depreciated and pickup truck
-        expectedEsCar.setDepreciated(true);
-        expectedEsCar.setBodyType(FieldVal.PICKUP_TRUCK.val());
-
-        List<EsCar> returnedCars = Arrays.asList(expectedEsCar);
-
-        DepreciatedCar expectedDepreciatedCar = new DepreciatedCar();
-        expectedDepreciatedCar.setId(expectedEsCar.getId());
-        expectedDepreciatedCar.setTheftTitle(true);
-
-        PickupTruck expectedPickupTruck = new PickupTruck();
-        expectedPickupTruck.setId(expectedEsCar.getId());
-        expectedPickupTruck.setBedLength(BigDecimal.TEN);
-
-        when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
-        when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(expectedDepreciatedCar);
-        when(pickupTruckService.getPickupTruckById(anyLong())).thenReturn(expectedPickupTruck);
-
-        MvcResult mvcResult = mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andReturn();
-
-        DepreciatedPickupTruckVO depreciatedPickupTruckVO = new DepreciatedPickupTruckVO();
-        BeanUtils.copyProperties(expectedEsCar, depreciatedPickupTruckVO);
-        BeanUtils.copyProperties(expectedDepreciatedCar, depreciatedPickupTruckVO);
-        BeanUtils.copyProperties(expectedPickupTruck, depreciatedPickupTruckVO);
-
-        CommonReturnType expectedResponseBody = CommonReturnType.create(Arrays.asList(depreciatedPickupTruckVO));
-
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-
-        assertEquals(StringUtils.deleteWhitespace(objectMapper.writeValueAsString(expectedResponseBody)),
-                StringUtils.deleteWhitespace(actualResponseBody));
-    }
-
-    @Test
-    void listPickupCarsShouldReturnSatisfiedCars() throws Exception {
-        RequestBuilder request = MockMvcRequestBuilders
-                .get("/car/list")
-                .accept(MediaType.APPLICATION_JSON)
-                .param(UrlParameter.PAGE_SIZE.val(), "1")
-                .param(UrlParameter.PRICE.val(), "10000-100000")
-                .param(UrlParameter.BODY_TYPE.val(), "pickup-truck")
-                .param(UrlParameter.MAKE_NAME.val(), "land-rover")
-                .param(UrlParameter.LISTING_COLOR.val(), "black")
-                .param(UrlParameter.YEAR.val(), "2010-2020")
-                .param(UrlParameter.MILEAGE.val(), "1500")
-                .param(UrlParameter.MAXIMUM_SEATING.val(), "10");
-
-        // expect a pickup truck
-        EsCar expectedEsCar = new EsCar();
-        expectedEsCar.setId(1L);
-        expectedEsCar.setPrice(10000);
-        expectedEsCar.setBodyType(FieldVal.PICKUP_TRUCK.val());
-        expectedEsCar.setMakeName("Land Rover");
-        expectedEsCar.setListingColor("Black");
-        expectedEsCar.setYear(2012);
-        expectedEsCar.setMileage(1000);
-        expectedEsCar.setMaximumSeating(5);
-
-        List<EsCar> returnedCars = Arrays.asList(expectedEsCar);
-
-        PickupTruck expectedPickupTruck = new PickupTruck();
-        expectedPickupTruck.setId(expectedEsCar.getId());
-        expectedPickupTruck.setBedLength(BigDecimal.TEN);
-
-        when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
-        when(pickupTruckService.getPickupTruckById(anyLong())).thenReturn(expectedPickupTruck);
-
-        MvcResult mvcResult = mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andReturn();
-
-        PickupTruckVO pickupTruckVO = new PickupTruckVO();
-        BeanUtils.copyProperties(expectedEsCar, pickupTruckVO);
-        BeanUtils.copyProperties(expectedPickupTruck, pickupTruckVO);
-
-        CommonReturnType expectedResponseBody = CommonReturnType.create(Arrays.asList(pickupTruckVO));
-
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-
-        assertEquals(StringUtils.deleteWhitespace(objectMapper.writeValueAsString(expectedResponseBody)),
-                StringUtils.deleteWhitespace(actualResponseBody));
-    }
-
-    @Test
-    void listDepreciatedCarsShouldReturnSatisfiedCars() throws Exception {
-        RequestBuilder request = MockMvcRequestBuilders
-                .get("/car/list")
-                .accept(MediaType.APPLICATION_JSON)
-                .param(UrlParameter.PAGE_SIZE.val(), "1")
-                .param(UrlParameter.PRICE.val(), "10000-100000")
-                .param(UrlParameter.BODY_TYPE.val(), "pickup-truck")
-                .param(UrlParameter.MAKE_NAME.val(), "land-rover")
-                .param(UrlParameter.LISTING_COLOR.val(), "black")
-                .param(UrlParameter.YEAR.val(), "2010-2020")
-                .param(UrlParameter.MILEAGE.val(), "1500")
-                .param(UrlParameter.MAXIMUM_SEATING.val(), "10");
-
-        // expect a depreciated car
-        EsCar expectedEsCar = new EsCar();
-        expectedEsCar.setId(1L);
-        expectedEsCar.setPrice(10000);
-        expectedEsCar.setBodyType("Coupe");
-        expectedEsCar.setMakeName("Land Rover");
-        expectedEsCar.setListingColor("Black");
-        expectedEsCar.setYear(2012);
-        expectedEsCar.setMileage(1000);
-        expectedEsCar.setMaximumSeating(5);
-        expectedEsCar.setDepreciated(true);
-
-        List<EsCar> returnedCars = Arrays.asList(expectedEsCar);
-
-        DepreciatedCar expectedDepreciatedCar = new DepreciatedCar();
-        expectedDepreciatedCar.setId(expectedEsCar.getId());
-        expectedDepreciatedCar.setTheftTitle(true);
-
-        when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
-        when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(expectedDepreciatedCar);
-
-        MvcResult mvcResult = mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andReturn();
-
-        DepreciatedCarVO depreciatedCarVO = new DepreciatedCarVO();
-        BeanUtils.copyProperties(expectedEsCar, depreciatedCarVO);
-        BeanUtils.copyProperties(expectedDepreciatedCar, depreciatedCarVO);
-
-        CommonReturnType expectedResponseBody = CommonReturnType.create(Arrays.asList(depreciatedCarVO));
-
-        String actualResponseBody = mvcResult.getResponse().getContentAsString();
-
-        assertEquals(StringUtils.deleteWhitespace(objectMapper.writeValueAsString(expectedResponseBody)),
-                StringUtils.deleteWhitespace(actualResponseBody));
-    }
+//    @Test
+//    void listDepreciatedCarsShouldReturnSatisfiedCars() throws Exception {
+//        RequestBuilder request = MockMvcRequestBuilders
+//                .get("/car/list")
+//                .accept(MediaType.APPLICATION_JSON)
+//                .param(UrlParameter.PAGE_SIZE.val(), "1")
+//                .param(UrlParameter.PRICE.val(), "10000-100000")
+//                .param(UrlParameter.BODY_TYPE.val(), "pickup-truck")
+//                .param(UrlParameter.MAKE_NAME.val(), "land-rover")
+//                .param(UrlParameter.LISTING_COLOR.val(), "black")
+//                .param(UrlParameter.YEAR.val(), "2010-2020")
+//                .param(UrlParameter.MILEAGE.val(), "1500")
+//                .param(UrlParameter.MAXIMUM_SEATING.val(), "10");
+//
+//        // expect a depreciated car
+//        EsCar expectedEsCar = new EsCar();
+//        expectedEsCar.setId(1L);
+//        expectedEsCar.setPrice(10000);
+//        expectedEsCar.setBodyType("Coupe");
+//        expectedEsCar.setMakeName("Land Rover");
+//        expectedEsCar.setListingColor("Black");
+//        expectedEsCar.setYear(2012);
+//        expectedEsCar.setMileage(1000);
+//        expectedEsCar.setMaximumSeating(5);
+//        expectedEsCar.setDepreciated(true);
+//
+//        List<EsCar> returnedCars = Arrays.asList(expectedEsCar);
+//
+//        DepreciatedCar expectedDepreciatedCar = new DepreciatedCar();
+//        expectedDepreciatedCar.setId(expectedEsCar.getId());
+//        expectedDepreciatedCar.setTheftTitle(true);
+//
+//        when(esCarService.listCarsWithDynamicQuery(any(Map.class))).thenReturn(returnedCars);
+//        when(depreciatedCarService.getDepreciatedCarById(anyLong())).thenReturn(expectedDepreciatedCar);
+//
+//        MvcResult mvcResult = mockMvc.perform(request)
+//                .andExpect(status().isOk())
+//                .andReturn();
+//
+//        DepreciatedCarVO depreciatedCarVO = new DepreciatedCarVO();
+//        BeanUtils.copyProperties(expectedEsCar, depreciatedCarVO);
+//        BeanUtils.copyProperties(expectedDepreciatedCar, depreciatedCarVO);
+//
+//        CommonReturnType expectedResponseBody = CommonReturnType.create(Arrays.asList(depreciatedCarVO));
+//
+//        String actualResponseBody = mvcResult.getResponse().getContentAsString();
+//
+//        assertEquals(StringUtils.deleteWhitespace(objectMapper.writeValueAsString(expectedResponseBody)),
+//                StringUtils.deleteWhitespace(actualResponseBody));
+//    }
 
     private Car createCar() {
         Car car = new Car();

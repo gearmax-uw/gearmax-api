@@ -11,6 +11,7 @@ import com.uw.gearmax.gearmaxapi.domain.Vehicle;
 import com.uw.gearmax.gearmaxapi.domain.es.EsCar;
 import com.uw.gearmax.gearmaxapi.error.BusinessException;
 import com.uw.gearmax.gearmaxapi.response.CommonReturnType;
+import com.uw.gearmax.gearmaxapi.response.MetaData;
 import com.uw.gearmax.gearmaxapi.service.CarService;
 import com.uw.gearmax.gearmaxapi.service.DepreciatedCarService;
 import com.uw.gearmax.gearmaxapi.service.EsCarService;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Controller
-@CrossOrigin
+@CrossOrigin(origins = "*")
 @RequestMapping("/car")
 public class CarController {
 
@@ -234,7 +236,10 @@ public class CarController {
     @GetMapping("/list")
     @ResponseBody
     public CommonReturnType listCars(@RequestParam Map<String, String> queryMap) {
-        List<EsCar> cars = esCarService.listCarsWithDynamicQuery(queryMap);
+        // List<EsCar> cars = esCarService.listCarsWithDynamicQuery(queryMap);
+        SearchHits<EsCar> searchHitsOfCars = esCarService.listSearchHitsOfCarsWithDynamicQuery(queryMap);
+        long totalHitsOfCars = searchHitsOfCars.getTotalHits();
+        List<EsCar> cars = searchHitsOfCars.stream().map(hit -> hit.getContent()).collect(Collectors.toList());
         List<CarVO> carVOs = cars.stream().map(car -> {
             try {
                 // check if the car is both depreciated and a pickup truck
@@ -262,7 +267,7 @@ public class CarController {
             }
             return convertCarVOFromEntity(car);
         }).collect(Collectors.toList());
-        return CommonReturnType.create(carVOs);
+        return CommonReturnType.create(carVOs, new MetaData(totalHitsOfCars));
     }
 
     private CarVO convertCarVOFromEntity(Vehicle car) {

@@ -55,6 +55,17 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
     }
 
     @Override
+    public SearchHits<EsCar> listSearchHitsOfCarsWithDynamicQuery(Map<String, String> queryMap) {
+        Pageable pageable = getPageable(queryMap);
+        BoolQueryBuilder boolQueryBuilder = buildBoolSearchQuery(queryMap);
+        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
+                .withQuery(boolQueryBuilder)
+                .withPageable(pageable)
+                .build();
+        return elasticsearchOperations.search(searchQuery, EsCar.class);
+    }
+
+    @Override
     public List<EsCar> listCarsWithDynamicQuery(Map<String, String> queryMap) {
         Pageable pageable = getPageable(queryMap);
         BoolQueryBuilder boolQueryBuilder = buildBoolSearchQuery(queryMap);
