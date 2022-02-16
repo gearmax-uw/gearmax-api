@@ -21,6 +21,7 @@ public class CarVO {
     private String zip;
     private String city;
     private String country;
+    private String mainPictureUrl;
     private LocalDate listedDate;
     private List<String> majorOptions;
 
@@ -166,5 +167,13 @@ public class CarVO {
 
     public void setMajorOptions(List<String> majorOptions) {
         this.majorOptions = majorOptions;
+    }
+
+    public String getMainPictureUrl() {
+        return mainPictureUrl;
+    }
+
+    public void setMainPictureUrl(String mainPictureUrl) {
+        this.mainPictureUrl = mainPictureUrl;
     }
 }

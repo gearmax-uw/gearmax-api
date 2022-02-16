@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.quartz.QuartzTransactionManager;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
@@ -233,10 +234,43 @@ public class CarController {
         return CommonReturnType.create(carVO);
     }
 
+    @GetMapping("/eslist")
+    @ResponseBody
+    public CommonReturnType listEsCars(@RequestParam Map<String, String> queryMap) {
+        List<EsCar> cars = esCarService.listCarsWithDynamicQuery(queryMap);
+        List<CarVO> carVOs = cars.stream().map(car -> {
+            try {
+                // check if the car is both depreciated and a pickup truck
+                if (Boolean.TRUE.equals(car.getDepreciated())
+                        && StringUtils.equals(car.getBodyType(), FieldVal.PICKUP_TRUCK.val())) {
+                    DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId());
+                    PickupTruck pickupTruck = pickupTruckService.getPickupTruckById(car.getId());
+                    return convertDepreciatedPickupTruckVOFromEntity(car, depreciatedCar, pickupTruck);
+                }
+                // check if the car is determined as depreciated
+                if (Boolean.TRUE.equals(car.getDepreciated())) {
+                    // car is determined as depreciated
+                    DepreciatedCar depreciatedCar = depreciatedCarService.getDepreciatedCarById(car.getId());
+                    return convertDepreciatedCarVOFromEntity(car, depreciatedCar);
+                }
+
+                // check if the car is a pickup truck
+                if (StringUtils.equals(car.getBodyType(), FieldVal.PICKUP_TRUCK.val())) {
+                    PickupTruck pickupTruck = pickupTruckService.getPickupTruckById(car.getId());
+                    return convertPickupTruckVOFromEntity(car, pickupTruck);
+                }
+            } catch (BusinessException e) {
+                logger.debug(e.getErrMsg());
+                return convertCarVOFromEntity(car);
+            }
+            return convertCarVOFromEntity(car);
+        }).collect(Collectors.toList());
+        return CommonReturnType.create(carVOs);
+    }
+
     @GetMapping("/list")
     @ResponseBody
     public CommonReturnType listCars(@RequestParam Map<String, String> queryMap) {
-        // List<EsCar> cars = esCarService.listCarsWithDynamicQuery(queryMap);
         SearchHits<EsCar> searchHitsOfCars = esCarService.listSearchHitsOfCarsWithDynamicQuery(queryMap);
         long totalHitsOfCars = searchHitsOfCars.getTotalHits();
         List<EsCar> cars = searchHitsOfCars.stream().map(hit -> hit.getContent()).collect(Collectors.toList());

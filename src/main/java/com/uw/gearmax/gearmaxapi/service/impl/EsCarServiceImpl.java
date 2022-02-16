@@ -12,7 +12,8 @@ import com.uw.gearmax.gearmaxapi.util.UrlParameter;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.FuzzyQueryBuilder;
+import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -57,9 +58,14 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
     @Override
     public SearchHits<EsCar> listSearchHitsOfCarsWithDynamicQuery(Map<String, String> queryMap) {
         Pageable pageable = getPageable(queryMap);
-        BoolQueryBuilder boolQueryBuilder = buildBoolSearchQuery(queryMap);
+        QueryBuilder queryBuilder = null;
+        if (!queryMap.containsKey(UrlParameter.SEARCH.val())) {
+            queryBuilder = buildBoolSearchQuery(queryMap);
+        } else {
+            queryBuilder = buildMultiMatchQuery(queryMap);
+        }
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(boolQueryBuilder)
+                .withQuery(queryBuilder)
                 .withPageable(pageable)
                 .build();
         return elasticsearchOperations.search(searchQuery, EsCar.class);
@@ -68,12 +74,38 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
     @Override
     public List<EsCar> listCarsWithDynamicQuery(Map<String, String> queryMap) {
         Pageable pageable = getPageable(queryMap);
-        BoolQueryBuilder boolQueryBuilder = buildBoolSearchQuery(queryMap);
+        QueryBuilder queryBuilder = null;
+        if (!queryMap.containsKey(UrlParameter.SEARCH.val())) {
+            queryBuilder = buildBoolSearchQuery(queryMap);
+        } else {
+            queryBuilder = buildMultiMatchQuery(queryMap);
+        }
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(boolQueryBuilder)
+                .withQuery(queryBuilder)
                 .withPageable(pageable)
                 .build();
         return listCarsWithQuery(searchQuery);
+    }
+
+    private MultiMatchQueryBuilder buildMultiMatchQuery(Map<String, String> queryMap) {
+        String keywords = queryMap.getOrDefault(UrlParameter.SEARCH.val(), "");
+        MultiMatchQueryBuilder multiMatchQueryBuilder = null;
+        if (StringUtils.isNotEmpty(keywords)) {
+            String[] keywordArr = keywords.split(CommonSymbol.SPACE.val());
+            StringBuilder sb = new StringBuilder();
+            for (String keyword : keywordArr) {
+                String convertedKeyword = CommonUtility.convertUrlParamValue(keyword);
+                sb.append(convertedKeyword).append(" ");
+            }
+            if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
+            multiMatchQueryBuilder = QueryBuilders.multiMatchQuery(sb.toString(), EsSearchKey.BODY_TYPE.val(),
+                    EsSearchKey.MAKE_NAME.val(), EsSearchKey.LISTING_COLOR.val(), EsSearchKey.TRANSMISSION_DISPLAY.val(),
+                    EsSearchKey.CITY.val(), EsSearchKey.MAJOR_OPTIONS.val(), EsSearchKey.MODEL_NAME.val(),
+                    EsSearchKey.WHEEL_SYSTEM.val(), EsSearchKey.TRIM_NAME.val());
+//            multiMatchQueryBuilder.operator(Operator.AND);
+//            multiMatchQueryBuilder.type(MultiMatchQueryBuilder.Type.CROSS_FIELDS);
+        }
+        return multiMatchQueryBuilder;
     }
 
     private BoolQueryBuilder buildBoolSearchQuery(Map<String, String> queryMap) {
@@ -93,7 +125,9 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
         if (queryMap.containsKey(UrlParameter.MAXIMUM_SEATING.val())) {
             maximumSeating = Integer.parseInt(queryMap.get(UrlParameter.MAXIMUM_SEATING.val()));
         }
+        String transmission = queryMap.getOrDefault(UrlParameter.TRANSMISSION.val(), "");
         String transmissionDisplay = queryMap.getOrDefault(UrlParameter.TRANSMISSION_DISPLAY.val(), "");
+        String fuelType = queryMap.getOrDefault(UrlParameter.FUEL_TYPE.val(), "");
         String features = queryMap.getOrDefault(UrlParameter.FEATURES.val(), "");
 
         if (StringUtils.isNotEmpty(priceRange)) {
@@ -136,6 +170,11 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
             boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.MAXIMUM_SEATING.val(), maximumSeating));
         }
 
+        if (StringUtils.isNotEmpty(transmission)) {
+            String convertedTransmission = CommonUtility.convertUrlParamValue(transmission);
+            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.TRANSMISSION.val(), convertedTransmission));
+        }
+
         if (StringUtils.isNotEmpty(transmissionDisplay)) {
             String convertedTransmissionDisplay = CommonUtility.convertUrlParamValue(transmissionDisplay);
             boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.TRANSMISSION_DISPLAY.val(), convertedTransmissionDisplay));
@@ -146,6 +185,11 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
             // boolQueryBuilder.should(QueryBuilders.termQuery(EsSearchKey.CITY.val(), convertedCity));
             // boolQueryBuilder.must(QueryBuilders.fuzzyQuery(EsSearchKey.CITY.val(), convertedCity));
             boolQueryBuilder.must(QueryBuilders.matchQuery(EsSearchKey.CITY.val(), convertedCity).fuzziness(Fuzziness.AUTO));
+        }
+
+        if (StringUtils.isNotEmpty(fuelType)) {
+            String convertedFuelType = CommonUtility.convertUrlParamValue(fuelType);
+            boolQueryBuilder.must(QueryBuilders.matchQuery(EsSearchKey.FUEL_TYPE.val(), convertedFuelType));
         }
 
         if (StringUtils.isNotEmpty(features)) {
