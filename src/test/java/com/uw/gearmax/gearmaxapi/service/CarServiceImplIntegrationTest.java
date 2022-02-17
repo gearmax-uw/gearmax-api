@@ -130,20 +130,6 @@ class CarServiceImplIntegrationTest {
         assertThrows(BusinessException.class, () -> carService.removeCar(anyLong()));
     }
 
-//    @Test
-//    public void givenCarToSaveShouldReturnSavedCar() throws Exception {
-//        Car car = createCar(1L, "abc");
-//        ValidationResult fakeValidationResult = new ValidationResult();
-//        fakeValidationResult.setHasErrors(false);
-//
-//        when(validator.validate(any(Car.class))).thenReturn(fakeValidationResult);
-//        when(carRepository.save(any(Car.class))).thenReturn(car);
-//
-//        Car returnedCar = carService.saveCar(car);
-//
-//        assertEquals(returnedCar.getVin(), car.getVin());
-//    }
-
     private Car createCar(Long id, String vin) {
         Car car = new Car();
         car.setId(id);

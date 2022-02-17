@@ -103,7 +103,7 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
                     EsSearchKey.CITY.val(), EsSearchKey.MAJOR_OPTIONS.val(), EsSearchKey.MODEL_NAME.val(),
                     EsSearchKey.WHEEL_SYSTEM.val(), EsSearchKey.TRIM_NAME.val());
 //            multiMatchQueryBuilder.operator(Operator.AND);
-//            multiMatchQueryBuilder.type(MultiMatchQueryBuilder.Type.CROSS_FIELDS);
+            multiMatchQueryBuilder.type(MultiMatchQueryBuilder.Type.BEST_FIELDS);
         }
         return multiMatchQueryBuilder;
     }
