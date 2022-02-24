@@ -12,7 +12,6 @@ import com.uw.gearmax.gearmaxapi.util.UrlParameter;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +73,7 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
     @Override
     public List<EsCar> listCarsWithDynamicQuery(Map<String, String> queryMap) {
         Pageable pageable = getPageable(queryMap);
-        QueryBuilder queryBuilder = null;
+        QueryBuilder queryBuilder;
         if (!queryMap.containsKey(UrlParameter.SEARCH.val())) {
             queryBuilder = buildBoolSearchQuery(queryMap);
         } else {
@@ -86,29 +85,27 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
                 .build();
         return listCarsWithQuery(searchQuery);
     }
-
-    private MultiMatchQueryBuilder buildMultiMatchQuery(Map<String, String> queryMap) {
+    
+    private QueryBuilder buildMultiMatchQuery(Map<String, String> queryMap) {
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         String keywords = queryMap.getOrDefault(UrlParameter.SEARCH.val(), "");
-        MultiMatchQueryBuilder multiMatchQueryBuilder = null;
         if (StringUtils.isNotEmpty(keywords)) {
             String[] keywordArr = keywords.split(CommonSymbol.SPACE.val());
-            StringBuilder sb = new StringBuilder();
             for (String keyword : keywordArr) {
                 String convertedKeyword = CommonUtility.convertUrlParamValue(keyword);
-                sb.append(convertedKeyword).append(" ");
+                boolQueryBuilder.must(QueryBuilders.multiMatchQuery(convertedKeyword, EsSearchKey.BODY_TYPE.val(),
+                        EsSearchKey.MAKE_NAME.val(), EsSearchKey.LISTING_COLOR.val(), EsSearchKey.EXTERIOR_COLOR.val(),
+                        EsSearchKey.INTERIOR_COLOR.val(), EsSearchKey.TRANSMISSION_DISPLAY.val(),
+                        EsSearchKey.CITY.val(), EsSearchKey.COUNTRY.val(), EsSearchKey.ZIP.val(),
+                        EsSearchKey.MAJOR_OPTIONS.val(), EsSearchKey.MODEL_NAME.val(), EsSearchKey.WHEEL_SYSTEM.val(),
+                        EsSearchKey.WHEEL_SYSTEM_DISPLAY.val(), EsSearchKey.TRIM_NAME.val(), EsSearchKey.ENGINE_TYPE.val(),
+                        EsSearchKey.FUEL_TYPE.val()));
             }
-            if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
-            multiMatchQueryBuilder = QueryBuilders.multiMatchQuery(sb.toString(), EsSearchKey.BODY_TYPE.val(),
-                    EsSearchKey.MAKE_NAME.val(), EsSearchKey.LISTING_COLOR.val(), EsSearchKey.TRANSMISSION_DISPLAY.val(),
-                    EsSearchKey.CITY.val(), EsSearchKey.MAJOR_OPTIONS.val(), EsSearchKey.MODEL_NAME.val(),
-                    EsSearchKey.WHEEL_SYSTEM.val(), EsSearchKey.TRIM_NAME.val());
-//            multiMatchQueryBuilder.operator(Operator.AND);
-            multiMatchQueryBuilder.type(MultiMatchQueryBuilder.Type.BEST_FIELDS);
         }
-        return multiMatchQueryBuilder;
+        return boolQueryBuilder;
     }
 
-    private BoolQueryBuilder buildBoolSearchQuery(Map<String, String> queryMap) {
+    private QueryBuilder buildBoolSearchQuery(Map<String, String> queryMap) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         String priceRange = queryMap.getOrDefault(UrlParameter.PRICE.val(), "");
@@ -141,17 +138,17 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
             // if bodyType = "SUV", then the es condition will be bodyType = "SUV"
             // in url, the body type will be xxx-yyy or just xxx, we need to convert the format to match the ones stored in ES server
             String convertedBodyType = CommonUtility.convertUrlParamValue(bodyType);
-            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.BODY_TYPE.val(), convertedBodyType));
+            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.BODY_TYPE.keywordVal(), convertedBodyType));
         }
 
         if (StringUtils.isNotEmpty(makeName)) {
             String convertedMakeName = CommonUtility.convertUrlParamValue(makeName);
-            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.MAKE_NAME.val(), convertedMakeName));
+            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.MAKE_NAME.keywordVal(), convertedMakeName));
         }
 
         if (StringUtils.isNotEmpty(listingColor)) {
             String convertedListingColor = CommonUtility.convertUrlParamValue(listingColor);
-            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.LISTING_COLOR.val(), convertedListingColor));
+            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.LISTING_COLOR.keywordVal(), convertedListingColor));
         }
 
         if (StringUtils.isNotEmpty(yearRange)) {
@@ -167,7 +164,7 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
         }
 
         if (maximumSeating != null && maximumSeating > 0) {
-            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.MAXIMUM_SEATING.val(), maximumSeating));
+            boolQueryBuilder.must(QueryBuilders.rangeQuery(EsSearchKey.MAXIMUM_SEATING.val()).lte(maximumSeating));
         }
 
         if (StringUtils.isNotEmpty(transmission)) {
@@ -177,7 +174,7 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
 
         if (StringUtils.isNotEmpty(transmissionDisplay)) {
             String convertedTransmissionDisplay = CommonUtility.convertUrlParamValue(transmissionDisplay);
-            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.TRANSMISSION_DISPLAY.val(), convertedTransmissionDisplay));
+            boolQueryBuilder.must(QueryBuilders.termQuery(EsSearchKey.TRANSMISSION_DISPLAY.keywordVal(), convertedTransmissionDisplay));
         }
 
         if (StringUtils.isNotEmpty(city)) {
@@ -189,14 +186,14 @@ public class EsCarServiceImpl extends CommonServiceImpl implements EsCarService 
 
         if (StringUtils.isNotEmpty(fuelType)) {
             String convertedFuelType = CommonUtility.convertUrlParamValue(fuelType);
-            boolQueryBuilder.must(QueryBuilders.matchQuery(EsSearchKey.FUEL_TYPE.val(), convertedFuelType));
+            boolQueryBuilder.must(QueryBuilders.matchQuery(EsSearchKey.FUEL_TYPE.keywordVal(), convertedFuelType));
         }
 
         if (StringUtils.isNotEmpty(features)) {
             String[] featureArr = features.split(CommonSymbol.SPACE.val());
             for (String feature : featureArr) {
                 String convertedFeature = CommonUtility.convertUrlParamValue(feature);
-                boolQueryBuilder.filter(QueryBuilders.termQuery(EsSearchKey.MAJOR_OPTIONS.val(), convertedFeature));
+                boolQueryBuilder.filter(QueryBuilders.termQuery(EsSearchKey.MAJOR_OPTIONS.keywordVal(), convertedFeature));
             }
         }
         return boolQueryBuilder;

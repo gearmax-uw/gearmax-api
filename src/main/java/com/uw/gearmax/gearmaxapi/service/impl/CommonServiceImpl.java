@@ -18,7 +18,8 @@ public class CommonServiceImpl {
         String sortOrder = queryMap.getOrDefault(UrlParameter.SORT_ORDER.val(), "asc");
 
         // sort by both price and year in descending order
-        Sort sort = Sort.by(Sort.Direction.DESC, SpecSearchKey.PRICE.val(), SpecSearchKey.YEAR.val());
+        Sort sort;
+        Pageable pageable;
         if (isSortFieldAvailable(sortField)) {
             if (StringUtils.equals(sortOrder, Sort.Direction.ASC.name())) {
                 // sort in ascending order
@@ -26,10 +27,13 @@ public class CommonServiceImpl {
             } else if (StringUtils.equals(sortOrder, Sort.Direction.DESC.name())) {
                 // sort in descending order
                 sort = Sort.by(sortField).descending();
+            } else {
+                sort = Sort.by(sortField);
             }
+            pageable = PageRequest.of(pageIndex, pageSize, sort);
+        } else {
+            pageable = PageRequest.of(pageIndex, pageSize);
         }
-
-        Pageable pageable = PageRequest.of(pageIndex, pageSize, sort);
         return pageable;
     }
 
