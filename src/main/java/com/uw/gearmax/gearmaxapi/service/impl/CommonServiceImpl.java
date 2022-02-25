@@ -21,10 +21,10 @@ public class CommonServiceImpl {
         Sort sort;
         Pageable pageable;
         if (isSortFieldAvailable(sortField)) {
-            if (StringUtils.equals(sortOrder, Sort.Direction.ASC.name())) {
+            if (StringUtils.equals(sortOrder, "asc")) {
                 // sort in ascending order
                 sort = Sort.by(sortField).ascending();
-            } else if (StringUtils.equals(sortOrder, Sort.Direction.DESC.name())) {
+            } else if (StringUtils.equals(sortOrder, "desc")) {
                 // sort in descending order
                 sort = Sort.by(sortField).descending();
             } else {
